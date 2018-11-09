@@ -63,11 +63,14 @@ const server = http.createServer(function(req, res){
     //after trimming both will become get-api/food (replacing slashes with blank/nothing but do nothing
     //if the slashes in the middle)
     var trimmedPath = path.replace(/^\/+|\/+$/g, '');
+
+    //Read Headers
+    var urlHeaders = req.headers;
     //SEND THE RESPONSE
     res.end("HELLO WORLD FROM THE SERVER\n");
 
     //LOG IF YOU NEED TO THE CONSOLE
-    console.log("request recieved on path->",trimmedPath, " method->", method, "query ->", typeof(queryObject));
+    console.log("headers as ->", urlHeaders);
 });
 
 //this line actually starts the server on port 3000, now when the port opens you will see the 
