@@ -121,7 +121,7 @@ const server = http.createServer(function(req, res){
             //send a default payload of empty {} if no payload is defined
             var payload = typeof(payload) == 'object' ? JSON.stringify(payload) : JSON.stringify({});
 
-            //now routing it to the handler with all defined parameters
+            //now returning the res to the client according to the statusCode and payload recieved from the handler
             res.writeHead(statusCode);
             
             //SEND THE RESPOSE FROM THE SERVER
@@ -152,12 +152,12 @@ server.listen(3000, function(){
 var handlers = {};
 
 handlers.sampler = function(data, callback){
-    console.log("details of the req", data)
+    //console.log("details of the req", data, "\n")
     callback(406, {'name': "Sampler Handler"});
 };
 
 handlers.notFound = function(data, callback){
-    console.log("details of the req", data)
+    //console.log("details of the req", data, "\n")
     callback(404);
 };
 
