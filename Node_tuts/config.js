@@ -1,18 +1,27 @@
 /*
 A common config file to identify staging and prodution
+
+NOTE : If you are using config file then to build in production mode (localhost:4200 or 4201) write,
+               NODE_ENV=production node index.js
+for staging (localhost:3000 or 3001), simply write
+              node index.js
+By default the app starts in staging
+
 */
 
 var environments = {};
 
 //configuration for staging
 environments.staging = {
-    'port': 3000,
+    'httpPort': 3000,
+    'httpsPort': 3001,
     'envName': "staging"
 };
 
 //configuration for production
 environments.production = {
-    'port': 4200,
+    'httpPort': 5000,
+    'httpsPort': 5001,
     'envName': "production"
 };
 

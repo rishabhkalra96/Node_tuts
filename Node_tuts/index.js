@@ -14,8 +14,11 @@
 const config = require('./config');
 
 //Dependencies
-//adding a pre built module http so that we can create and listen to http requests
+//adding a pre built module http/https so that we can create and listen to http requests
 const http = require('http');
+const https = require('https');
+//file system support to read files
+var fs = require('fs');
 //a built in module from node named url which is used to parse / read urls the user requests
 //url parsing is done inside the callback function of createserver
 var url = require('url');
@@ -23,7 +26,33 @@ var url = require('url');
 //To read Payload
 var stringDecoder = require('string_decoder').StringDecoder;
 //creating a server from the http module which defines what to do when the server is created
-const server = http.createServer(function(req, res){
+const httpServer = http.createServer(function(req, res){
+    unifiedServer(req, res);
+});
+//creating a server from the https module which defines what to do when the server is created
+var httpsServerOptions = {
+    'key': fs.readFileSync('./https/key-pem'),
+    'cert': fs.readFileSync('./https/cert.pem')
+};
+const httpsServer = https.createServer(httpsServerOptions, function(req, res){
+    unifiedServer(req, res);
+});
+
+
+//this line actually starts the server, now when the port opens you will see the 
+//below text on the screen. To be able to access the port you can write
+// curl localhost:portnumner
+httpServer.listen(config.httpPort, function(){
+    console.log("the server is listening on port",config.httpPort, " [",config.envName,"] ");
+});
+
+httpsServer.listen(config.httpsPort, function(){
+    console.log("the server is listening on port",config.httpsPort, " [",config.envName,"] ");
+});
+
+
+
+unifiedServer = function(req,res){
     //steps of parsing a user request
     
     //GET the method of request -> get/put/delete/post
@@ -144,15 +173,7 @@ const server = http.createServer(function(req, res){
             console.log("response on ", trimmedPath, " ->", statusCode, ",",payload);
         });
     });
-});
-
-//this line actually starts the server, now when the port opens you will see the 
-//below text on the screen. To be able to access the port you can write
-// curl localhost:portnumner
-server.listen(config.port, function(){
-    console.log("the server is listening on port",config.port, " [",config.envName,"] ");
-});
-
+};
 
 //DEFINING ROUTERS AND THEIR HANDLERS
 
