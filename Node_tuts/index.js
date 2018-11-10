@@ -121,6 +121,11 @@ const server = http.createServer(function(req, res){
             //send a default payload of empty {} if no payload is defined
             var payload = typeof(payload) == 'object' ? JSON.stringify(payload) : JSON.stringify({});
 
+            //add a specific format in which the data is to be sent to the client
+            //NOTE : You cannot set header after writing the head, it will throw an error
+            //best practice is to always set the headers first and then do everything else
+            res.setHeader('Content-Type', 'application/json');
+            
             //now returning the res to the client according to the statusCode and payload recieved from the handler
             res.writeHead(statusCode);
             
