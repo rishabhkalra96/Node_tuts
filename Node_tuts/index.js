@@ -103,13 +103,34 @@ const server = http.createServer(function(req, res){
     //NOTE : same type of event is read by res.end() also.
     req.on('end', () => {
         bufferPayload += decoder.end();
-        //SEND THE RESPONSE
-        res.end("HELLO WORLD FROM THE SERVER\n");
 
-        //LOG IF YOU NEED TO THE CONSOLE
-        console.log("payload recieved is", bufferPayload);
+        //ROUTE TO A SPECIFIC HANDLER BASED ON ROUTING OBJECT, ROUTE TO NOTFOUND IF NOT FOUND
+        var selectedHandler = typeof(router[trimmedPath]) !== 'undefined' ? handlers[trimmedPath] : handlers.notFound;
+        //once the handler is specified, we need to send some data to it as expected by the handler
+        var data  = {
+            'headers': urlHeaders,
+            'method': method,
+            'pathname': trimmedPath,
+            'payload': bufferPayload,
+            'queryString': queryObject
+        }
+        //send the data and look for callback
+        selectedHandler(data, (statusCode, payload) => {
+            //send a default status code of 200 if no status code is defined
+            var statusCode = typeof(statusCode) == 'number' ? statusCode : 200;
+            //send a default payload of empty {} if no payload is defined
+            var payload = typeof(payload) == 'object' ? JSON.stringify(payload) : JSON.stringify({});
+
+            //now routing it to the handler with all defined parameters
+            res.writeHead(statusCode);
+            
+            //SEND THE RESPOSE FROM THE SERVER
+            res.end(payload);
+            
+            //LOG IF YOU NEED TO THE CONSOLE
+            console.log("response on ", trimmedPath, " ->", statusCode, ",",payload);
+        });
     });
-
 });
 
 //this line actually starts the server on port 3000, now when the port opens you will see the 
@@ -118,3 +139,30 @@ const server = http.createServer(function(req, res){
 server.listen(3000, function(){
     console.log("the server is listening on port 3000");
 });
+
+
+//DEFINING ROUTERS AND THEIR HANDLERS
+
+/* 
+*A routing technique is a way to route the incomingrequests to specific handlers. This is usefull
+*to define a specific functionality according to a specific request. For example, if a route is of
+*sampler type, then a specific handler defined for sampler will be called.
+*/
+
+var handlers = {};
+
+handlers.sampler = function(data, callback){
+    console.log("details of the req", data)
+    callback(406, {'name': "Sampler Handler"});
+};
+
+handlers.notFound = function(data, callback){
+    console.log("details of the req", data)
+    callback(404);
+};
+
+
+//defining a router
+var router = {
+    'sampler' : handlers.sampler,
+};
