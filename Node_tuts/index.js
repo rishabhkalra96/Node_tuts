@@ -1,9 +1,17 @@
 /*
-*This is the primary file for API requests
-*
+* This is the primary file for API requests
+* 
+* NOTE : 
+* If you are using config file then to build in production mode (localhost:4200) write,
+*                NODE_ENV=production node index.js
+* for staging (localhost:3000), simply write
+*               node index.js
+* By default the app starts in staging 
 */
 
-//the purpose is to setup an http connection on port 3000
+
+//importing the configuration
+const config = require('./config');
 
 //Dependencies
 //adding a pre built module http so that we can create and listen to http requests
@@ -138,11 +146,11 @@ const server = http.createServer(function(req, res){
     });
 });
 
-//this line actually starts the server on port 3000, now when the port opens you will see the 
+//this line actually starts the server, now when the port opens you will see the 
 //below text on the screen. To be able to access the port you can write
-// curl localhost:3000 and whatever the output is set in res.end(), you will see that
-server.listen(3000, function(){
-    console.log("the server is listening on port 3000");
+// curl localhost:portnumner
+server.listen(config.port, function(){
+    console.log("the server is listening on port",config.port, " [",config.envName,"] ");
 });
 
 
