@@ -12,6 +12,8 @@ const http = require('http');
 //url parsing is done inside the callback function of createserver
 var url = require('url');
 
+//To read Payload
+var stringDecoder = require('string_decoder').StringDecoder;
 //creating a server from the http module which defines what to do when the server is created
 const server = http.createServer(function(req, res){
     //steps of parsing a user request
@@ -66,11 +68,48 @@ const server = http.createServer(function(req, res){
 
     //Read Headers
     var urlHeaders = req.headers;
-    //SEND THE RESPONSE
-    res.end("HELLO WORLD FROM THE SERVER\n");
 
-    //LOG IF YOU NEED TO THE CONSOLE
-    console.log("headers as ->", urlHeaders);
+    //Read the Payload
+    /*
+    Now one interesting thing about payload is that payloads don't come all at once, instead they
+    come in peices. So, in order to read the complete payload we need to collect the payload content
+    untill the payload has been recieved completely and then work accordingly. This is achieved using
+    two event handlers (data) and (end).
+    The data event handler will capture the payload data if it exists and the end handler will mark
+    that the payload has been recieved completely.
+    One thing to note in this is that the (end) handler is same as the one used as res.end() and it
+    also works like that.
+    Example of a request with payload / body is
+    http://localhost:3000/new-data   -> url
+    {
+        "name" : "rishabh",
+        "surname": "Kalra"
+    }                               -> body data
+
+    the request from the client will be like http.post(url, data);
+    */
+
+    var decoder = new stringDecoder('utf-8');
+    var bufferPayload = '';
+
+    //event handler when some data is recieved in the payload / body
+    req.on('data', (data) => {
+        //this usually writes the complete payload at once but sometimes in case of multiple payloads
+        //it takes time to write all of that. The below lines handle both the cases by appending
+        bufferPayload += decoder.write(data);
+    });
+
+    //event handler when the request is finished sending information
+    //NOTE : same type of event is read by res.end() also.
+    req.on('end', () => {
+        bufferPayload += decoder.end();
+        //SEND THE RESPONSE
+        res.end("HELLO WORLD FROM THE SERVER\n");
+
+        //LOG IF YOU NEED TO THE CONSOLE
+        console.log("payload recieved is", bufferPayload);
+    });
+
 });
 
 //this line actually starts the server on port 3000, now when the port opens you will see the 
