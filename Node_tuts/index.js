@@ -25,6 +25,51 @@ var url = require('url');
 
 //To read Payload
 var stringDecoder = require('string_decoder').StringDecoder;
+
+//acquiring the data from the ligrary
+var _data = require('./lib/data');
+
+
+//TESTING
+// @TODO delete this
+_data.create('test', 'newFile1', {'name': 'Rishabh Kalra'}, (err)=>{
+    if(!err){
+        console.log("successfully written to the new file");
+    }
+    else {
+        console.log("error --> ", err)
+    }
+});
+
+/* _data.read('test', 'newFile', (err, data)=>{
+    if(!err){
+        console.log(JSON.parse(data));
+    }else {
+        console.log("error reading the file ", err);
+    }
+});
+ */
+ _data.update('test', 'newFile', {'surname': 'Kalra'}, (err)=>{
+    if(err){
+        console.log("error occured while writing -> ", err);
+    }else {
+        console.log("successfully written in to the file")
+    }
+});
+
+_data.delete('test', 'newFile1', (err)=>{
+    if(err){
+        console.log(err);
+    }
+    else{
+        console.log("deleted successfully")
+    }
+})
+
+//END TESTING
+
+
+
 //creating a server from the http module which defines what to do when the server is created
 const httpServer = http.createServer(function(req, res){
     unifiedServer(req, res);
