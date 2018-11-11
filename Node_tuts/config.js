@@ -6,7 +6,6 @@ NOTE : If you are using config file then to build in production mode (localhost:
 for staging (localhost:3000 or 3001), simply write
               node index.js
 By default the app starts in staging
-
 */
 
 var environments = {};
@@ -15,14 +14,16 @@ var environments = {};
 environments.staging = {
     'httpPort': 3000,
     'httpsPort': 3001,
-    'envName': "staging"
+    'envName': "staging",
+    'hashingSecret': "ObviouslyASecret"
 };
 
 //configuration for production
 environments.production = {
     'httpPort': 5000,
     'httpsPort': 5001,
-    'envName': "production"
+    'envName': "production",
+    'hashingSecret': "ObviouslyASecretAgain"
 };
 
 //detect if user entered any environment argument on the command line

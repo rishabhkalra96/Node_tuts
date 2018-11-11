@@ -26,6 +26,9 @@ var url = require('url');
 //importing the handlers
 var handlers = require('./lib/handlers');
 
+//importing helpers
+var helpers = require('./lib/helpers');
+
 //To read Payload
 var stringDecoder = require('string_decoder').StringDecoder;
 //creating a server from the http module which defines what to do when the server is created
@@ -151,7 +154,7 @@ unifiedServer = function(req,res){
             'headers': urlHeaders,
             'method': method,
             'pathname': trimmedPath,
-            'payload': bufferPayload,
+            'payload': helpers.convertJSONstr2JSON(bufferPayload),
             'queryString': queryObject
         }
         //send the data and look for callback
@@ -188,5 +191,6 @@ unifiedServer = function(req,res){
 
 //defining a router
 var router = {
-    'ping': handlers.ping
+    'ping': handlers.ping,
+    'users': handlers.users
 };
