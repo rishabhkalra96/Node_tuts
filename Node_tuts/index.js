@@ -1,19 +1,58 @@
 /*
-*This is the primary file for API requests
-*
+* This is the primary file for API requests
+* 
+* NOTE : 
+* If you are using config file then to build in production mode (localhost:4200) write,
+*                NODE_ENV=production node index.js
+* for staging (localhost:3000), simply write
+*               node index.js
+* By default the app starts in staging 
 */
 
-//the purpose is to setup an http connection on port 3000
+
+//importing the configuration
+const config = require('./config');
 
 //Dependencies
-//adding a pre built module http so that we can create and listen to http requests
+//adding a pre built module http/https so that we can create and listen to http requests
 const http = require('http');
+const https = require('https');
+//file system support to read files
+var fs = require('fs');
 //a built in module from node named url which is used to parse / read urls the user requests
 //url parsing is done inside the callback function of createserver
 var url = require('url');
 
+//To read Payload
+var stringDecoder = require('string_decoder').StringDecoder;
 //creating a server from the http module which defines what to do when the server is created
-const server = http.createServer(function(req, res){
+const httpServer = http.createServer(function(req, res){
+    unifiedServer(req, res);
+});
+//creating a server from the https module which defines what to do when the server is created
+var httpsServerOptions = {
+    'key': fs.readFileSync('./https/key-pem'),
+    'cert': fs.readFileSync('./https/cert.pem')
+};
+const httpsServer = https.createServer(httpsServerOptions, function(req, res){
+    unifiedServer(req, res);
+});
+
+
+//this line actually starts the server, now when the port opens you will see the 
+//below text on the screen. To be able to access the port you can write
+// curl localhost:portnumner
+httpServer.listen(config.httpPort, function(){
+    console.log("the server is listening on port",config.httpPort, " [",config.envName,"] ");
+});
+
+httpsServer.listen(config.httpsPort, function(){
+    console.log("the server is listening on port",config.httpsPort, " [",config.envName,"] ");
+});
+
+
+
+unifiedServer = function(req,res){
     //steps of parsing a user request
     
     //GET the method of request -> get/put/delete/post
@@ -66,16 +105,98 @@ const server = http.createServer(function(req, res){
 
     //Read Headers
     var urlHeaders = req.headers;
-    //SEND THE RESPONSE
-    res.end("HELLO WORLD FROM THE SERVER\n");
 
-    //LOG IF YOU NEED TO THE CONSOLE
-    console.log("headers as ->", urlHeaders);
-});
+    //Read the Payload
+    /*
+    Now one interesting thing about payload is that payloads don't come all at once, instead they
+    come in peices. So, in order to read the complete payload we need to collect the payload content
+    untill the payload has been recieved completely and then work accordingly. This is achieved using
+    two event handlers (data) and (end).
+    The data event handler will capture the payload data if it exists and the end handler will mark
+    that the payload has been recieved completely.
+    One thing to note in this is that the (end) handler is same as the one used as res.end() and it
+    also works like that.
+    Example of a request with payload / body is
+    http://localhost:3000/new-data   -> url
+    {
+        "name" : "rishabh",
+        "surname": "Kalra"
+    }                               -> body data
 
-//this line actually starts the server on port 3000, now when the port opens you will see the 
-//below text on the screen. To be able to access the port you can write
-// curl localhost:3000 and whatever the output is set in res.end(), you will see that
-server.listen(3000, function(){
-    console.log("the server is listening on port 3000");
-});
+    the request from the client will be like http.post(url, data);
+    */
+
+    var decoder = new stringDecoder('utf-8');
+    var bufferPayload = '';
+
+    //event handler when some data is recieved in the payload / body
+    req.on('data', (data) => {
+        //this usually writes the complete payload at once but sometimes in case of multiple payloads
+        //it takes time to write all of that. The below lines handle both the cases by appending
+        bufferPayload += decoder.write(data);
+    });
+
+    //event handler when the request is finished sending information
+    //NOTE : same type of event is read by res.end() also.
+    req.on('end', () => {
+        bufferPayload += decoder.end();
+
+        //ROUTE TO A SPECIFIC HANDLER BASED ON ROUTING OBJECT, ROUTE TO NOTFOUND IF NOT FOUND
+        var selectedHandler = typeof(router[trimmedPath]) !== 'undefined' ? handlers[trimmedPath] : handlers.notFound;
+        //once the handler is specified, we need to send some data to it as expected by the handler
+        var data  = {
+            'headers': urlHeaders,
+            'method': method,
+            'pathname': trimmedPath,
+            'payload': bufferPayload,
+            'queryString': queryObject
+        }
+        //send the data and look for callback
+        selectedHandler(data, (statusCode, payload) => {
+            //send a default status code of 200 if no status code is defined
+            var statusCode = typeof(statusCode) == 'number' ? statusCode : 200;
+            //send a default payload of empty {} if no payload is defined
+            var payload = typeof(payload) == 'object' ? JSON.stringify(payload) : JSON.stringify({});
+
+            //add a specific format in which the data is to be sent to the client
+            //NOTE : You cannot set header after writing the head, it will throw an error
+            //best practice is to always set the headers first and then do everything else
+            res.setHeader('Content-Type', 'application/json');
+            
+            //now returning the res to the client according to the statusCode and payload recieved from the handler
+            res.writeHead(statusCode);
+            
+            //SEND THE RESPOSE FROM THE SERVER
+            res.end(payload);
+            
+            //LOG IF YOU NEED TO THE CONSOLE
+            console.log("response on ", trimmedPath, " ->", statusCode, ",",payload);
+        });
+    });
+};
+
+//DEFINING ROUTERS AND THEIR HANDLERS
+
+/* 
+*A routing technique is a way to route the incomingrequests to specific handlers. This is usefull
+*to define a specific functionality according to a specific request. For example, if a route is of
+*sampler type, then a specific handler defined for sampler will be called.
+*/
+
+var handlers = {};
+
+handlers.sampler = function(data, callback){
+    //console.log("details of the req", data, "\n")
+    callback(406, {'name': "Sampler Handler"});
+};
+
+handlers.notFound = function(data, callback){
+    //console.log("details of the req", data, "\n")
+    callback(404);
+};
+
+
+//defining a router
+var router = {
+    'sampler' : handlers.sampler,
+};
