@@ -12,19 +12,20 @@ var helpers = require('./helpers');
 var handlers = {};
 
 //a ping route handler so that we can check if the server is alive or dead
-handlers.ping = function(data, callback){
+handlers.ping = (data, callback)=>{
     callback(200);
 };
 
-handlers.notFound = function(data, callback){
-    //console.log("details of the req", data, "\n")
+handlers.notFound = (data, callback)=>{
+
     callback(404);
 };
 
 //handler to handle CRUD for users api
-handlers.users = function(data, callback){
+handlers.users = (data, callback)=>{
     //check the method
-    var allowedMethods = ['get', 'put', 'post', 'delete'];
+    let allowedMethods = ['get', 'put', 'post', 'delete'];
+
     if(allowedMethods.indexOf(data.method) > -1){
         handlers._users[data.method](data, callback);
     }
@@ -32,8 +33,8 @@ handlers.users = function(data, callback){
 //CONTAINER FOR handlers.users
 handlers._users = {};
 //to handle get request on users
-handlers._users.get = function(data, callback){
-    var phone = typeof(data.queryString.phone) == 'string' && data.queryString.phone.length == 10 ? data.queryString.phone : false;
+handlers._users.get = (data, callback)=>{
+    let phone = typeof(data.queryString.phone) == 'string' && data.queryString.phone.length == 10 ? data.queryString.phone : false;
     if (phone){
         dataLib.read('users', phone, (err, data)=>{
             if(!err && data){
@@ -51,11 +52,11 @@ handlers._users.get = function(data, callback){
 };
 //to handle post request on users
 handlers._users.post = function(data, callback){
-    var firstName = typeof(data.payload.firstName) == 'string' && data.payload.firstName.trim().length > 0 ? data.payload.firstName.trim() : false;
-    var lastName = typeof(data.payload.lastName) == 'string' && data.payload.lastName.trim().length > 0 ? data.payload.lastName.trim() : false;
-    var phone = typeof(data.payload.phone) == 'string' && data.payload.phone.trim().length == 10 ? data.payload.phone.trim() : false;
-    var password = typeof(data.payload.password) == 'string' && data.payload.password.trim().length > 0 ? data.payload.password.trim() : false;
-    var tosAggreement = typeof(data.payload.tosAggreement) == 'boolean' && data.payload.tosAggreement == true ? true : false;
+    let firstName = typeof(data.payload.firstName) == 'string' && data.payload.firstName.trim().length > 0 ? data.payload.firstName.trim() : false;
+    let lastName = typeof(data.payload.lastName) == 'string' && data.payload.lastName.trim().length > 0 ? data.payload.lastName.trim() : false;
+    let phone = typeof(data.payload.phone) == 'string' && data.payload.phone.trim().length == 10 ? data.payload.phone.trim() : false;
+    let password = typeof(data.payload.password) == 'string' && data.payload.password.trim().length > 0 ? data.payload.password.trim() : false;
+    let tosAggreement = typeof(data.payload.tosAggreement) == 'boolean' && data.payload.tosAggreement == true ? true : false;
     
     if (firstName && lastName && phone && password && tosAggreement){
         //check if the user is already registered based on the phoneNumber
@@ -67,11 +68,11 @@ handlers._users.post = function(data, callback){
             }
             else {
                 //new user
-                var hashedPass = helpers.hash(password)
+                let hashedPass = helpers.hash(password)
                 if(hashedPass){
 
                     //preparing data
-                    var dataObj = {};
+                    let dataObj = {};
 
                     dataObj.firstName = firstName;
                     dataObj.lastName = lastName;
@@ -103,18 +104,16 @@ handlers._users.post = function(data, callback){
     }
 };
 //to handle put request on users
-handlers._users.put = function(data, callback){
-    var phone = typeof(data.payload.phone) == 'string' && data.payload.phone.length == 10 ? data.payload.phone : false;
-    var firstName = typeof(data.payload.firstName) == 'string' && data.payload.firstName.length > 0? data.payload.firstName: false;
-    var lastName = typeof(data.payload.lastName) == 'string' && data.payload.lastName.length > 0? data.payload.lastName: false;
-    var password = typeof(data.payload.password) == 'string' && data.payload.password.length > 0? data.payload.password: false;
+handlers._users.put = (data, callback)=>{
+    let phone = typeof(data.payload.phone) == 'string' && data.payload.phone.length == 10 ? data.payload.phone : false;
+    let firstName = typeof(data.payload.firstName) == 'string' && data.payload.firstName.length > 0? data.payload.firstName: false;
+    let lastName = typeof(data.payload.lastName) == 'string' && data.payload.lastName.length > 0? data.payload.lastName: false;
+    let password = typeof(data.payload.password) == 'string' && data.payload.password.length > 0? data.payload.password: false;
     
     if(phone){
         //fetch the details from the given phone number, if exists
         dataLib.read('users', phone, (err, data)=>{
         if(!err && data){
-            console.log("data came in as", data)
-
             //check if atleast one of them is not empty detail entered by the user
             if(firstName || lastName || password){
                 if(firstName){
@@ -152,7 +151,7 @@ handlers._users.put = function(data, callback){
     }
 };
 //to handle delete request on users
-handlers._users.delete = function(data, callback){
+handlers._users.delete = (data, callback)=>{
     var phone = typeof(data.queryString.phone) == 'string' && data.queryString.phone.length == 10 ? data.queryString.phone : false;
 
     if(phone){
