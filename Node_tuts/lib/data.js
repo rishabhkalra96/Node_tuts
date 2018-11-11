@@ -7,6 +7,7 @@
 //one for accessing the files and another to resolve absolute paths
 var fs = require('fs');
 var path = require('path');
+var helpers = require('./helpers');
 
 
 //container for the module to be exported
@@ -53,7 +54,13 @@ lib.create = (dir, file, data, callback) => {
 
 lib.read = (dir, file, callback) => {
     fs.readFile(lib.baseDir+dir+'/'+file+'.json', 'utf8', (err, data)=>{
-        callback(err, data);
+        if(!err && data){
+            var parsedData = helpers.convertJSONstr2JSON(data);
+            callback(false, parsedData);
+        }
+        else {
+            callback(err, data);
+        }
     });
 };
 
@@ -98,7 +105,7 @@ lib.update = (dir, file, data, callback) => {
 
 lib.delete = (dir, file, callback)=>{
     //simply delete the file 
-    fs.unlinkSync(lib.baseDir+dir+'/'+file+'.json', (err)=>{
+    fs.unlink(lib.baseDir+dir+'/'+file+'.json', (err)=>{
         if(!err){
             callback(false);
         }
