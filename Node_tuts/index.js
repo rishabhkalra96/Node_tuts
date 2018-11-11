@@ -23,6 +23,9 @@ var fs = require('fs');
 //url parsing is done inside the callback function of createserver
 var url = require('url');
 
+//importing the handlers
+var handlers = require('./lib/handlers');
+
 //To read Payload
 var stringDecoder = require('string_decoder').StringDecoder;
 //creating a server from the http module which defines what to do when the server is created
@@ -183,26 +186,7 @@ unifiedServer = function(req,res){
 *sampler type, then a specific handler defined for sampler will be called.
 */
 
-var handlers = {};
-
-//a ping route handler so that we can check if the server is alive or dead
-handlers.ping = function(data, callback){
-    callback(200);
-};
-
-handlers.sampler = function(data, callback){
-    //console.log("details of the req", data, "\n")
-    callback(406, {'name': "Sampler Handler"});
-};
-
-handlers.notFound = function(data, callback){
-    //console.log("details of the req", data, "\n")
-    callback(404);
-};
-
-
 //defining a router
 var router = {
-    'sampler' : handlers.sampler,
     'ping': handlers.ping
 };
