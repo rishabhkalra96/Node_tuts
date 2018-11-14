@@ -14,3 +14,18 @@ openssl req -newkey rsa:2048 -new -nodes -x509 -days 3650 -keyout key-pem -out c
 TO FIX OPENSSL NOT FOUND
 echo "export LD_LIBRARY_PATH=/usr/local/bin/openssl" >> ~/.bashrc
 export LD_LIBRARY_PATH=/lib:/usr/lib:/usr/local/lib
+
+
+RUN APP BY
+'node index.js' from root
+
+
+API CALLS SUPPORTED
+
+API URL                                 TYPE                            DETAILS
+--------------------------------------------------------------------------------------------------
+localhost:3000/ping                  |   GET      |              check if server is alive
+                                     |            |
+localhost:3000/users?phone=phoneNo   |   GET      |              get user details
+                                     |            |
+localhost:3000/users                 |   POST     |              register a new user with payload                                      |            |              (firstName 'string',lastName                                          |            |                'string', password 'string',                                        |            |                 tosAggreement 'boolean',phone                                      |            |                            'string')

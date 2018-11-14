@@ -31,7 +31,21 @@ helpers.convertJSONstr2JSON = (strJSON)=>{
     }
 };
 
+//create an alphanumerc string of given length
+helpers.createRandomString = (strLen)=>{
+    strLen = typeof(strLen) == 'number' && strLen > 0 ? strLen : false;
+    if(strLen){
+        //create a string of combination of alphabets and numbers
+        let possibleChars = 'abcdefghijklmnopqrstuvwxyz1234567890'
 
+        var RandomStr = '';
+        for(i = 0; i < strLen; i++){
+            RandomStr += possibleChars.charAt(Math.floor(Math.random() * possibleChars.length));
+        }
+        return RandomStr;
+    }
+    else return false;
+};
 
 //export this module
 module.exports = helpers;
