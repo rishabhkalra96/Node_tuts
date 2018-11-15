@@ -5,7 +5,7 @@ STEPS TO START THE APP
 
 1. MAke sure you have openssl installed (openssl.org)
 2. Make sure you have node installed
-
+3. Run intitiateProject.bat for windows or createDirectories.sh for linux/git bash users to create directories needed for the project
 
 
 TO GENERATE OPENSSL KEY 
@@ -18,14 +18,3 @@ export LD_LIBRARY_PATH=/lib:/usr/lib:/usr/local/lib
 
 RUN APP BY
 'node index.js' from root
-
-
-API CALLS SUPPORTED
-
-API URL                                 TYPE                            DETAILS
---------------------------------------------------------------------------------------------------
-localhost:3000/ping                  |   GET      |              check if server is alive
-                                     |            |
-localhost:3000/users?phone=phoneNo   |   GET      |              get user details
-                                     |            |
-localhost:3000/users                 |   POST     |              register a new user with payload                                      |            |              (firstName 'string',lastName                                          |            |                'string', password 'string',                                        |            |                 tosAggreement 'boolean',phone                                      |            |                            'string')
