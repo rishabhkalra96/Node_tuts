@@ -368,4 +368,22 @@ handlers._tokens.verifyToken = (id, phone, callback)=>{
 };
 //CONTAINERS END
 
+//CHECKS
+handlers.checks = (data, callback)=>{
+    let allowedMethods = ['put', 'post', 'delete', 'get'];
+    if (allowedMethods.indexOf(data.method) > -1){
+        //call respective sub handler
+        handlers._checks[data.method](data, callback);
+    }
+}
+
+//CONTAINERS FOR CHECKS
+handlers._checks = [];
+handlers._checks.get = (data, callback) => {
+};
+handlers._checks.post = (data, callback) => {};
+handlers._checks.put = (data, callback) => {};
+handlers._checks.delete = (data, callback) => {};
+//CONTAINERS END
+
 module.exports = handlers;
