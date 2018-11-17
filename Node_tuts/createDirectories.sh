@@ -11,4 +11,5 @@ then
       cd .data
       mkdir users
       mkdir tokens
+      mkdir checks
 fi

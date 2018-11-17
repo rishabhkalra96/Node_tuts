@@ -15,7 +15,8 @@ environments.staging = {
     'httpPort': 3000,
     'httpsPort': 3001,
     'envName': "staging",
-    'hashingSecret': "ObviouslyASecret"
+    'hashingSecret': "ObviouslyASecret",
+    'maxChecks': 5
 };
 
 //configuration for production
@@ -23,7 +24,8 @@ environments.production = {
     'httpPort': 5000,
     'httpsPort': 5001,
     'envName': "production",
-    'hashingSecret': "ObviouslyASecretAgain"
+    'hashingSecret': "ObviouslyASecretAgain",
+    'maxChecks': 5
 };
 
 //detect if user entered any environment argument on the command line

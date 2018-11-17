@@ -5,11 +5,12 @@
 
 
 //dependencies
-var dataLib = require('./data');
-var helpers = require('./helpers');
+let dataLib = require('./data');
+let helpers = require('./helpers');
+let config = require('../config');
 
 //main code
-var handlers = {};
+let handlers = {};
 
 //a ping route handler so that we can check if the server is alive or dead
 handlers.ping = (data, callback)=>{
@@ -169,22 +170,54 @@ handlers._users.put = (data, callback)=>{
 };
 //to handle delete request on users
 handlers._users.delete = (data, callback)=>{
-    var phone = typeof(data.queryString.phone) == 'string' && data.queryString.phone.length == 10 ? data.queryString.phone : false;
-
+    let phone = typeof(data.queryString.phone) == 'string' && data.queryString.phone.length == 10 ? data.queryString.phone : false;
     if(phone){
         let tokenID = typeof(data.headers.token) == 'string' && data.headers.token.length > 0 ? data.headers.token : false;
         handlers._tokens.verifyToken(tokenID,phone,(isValid)=>{
             if(isValid){
-                dataLib.delete('users', phone, (err)=>{
-                    if(!err){
-                        callback(200);
+                dataLib.read('users', phone, (err, userData)=>{
+                    if(!err && userData){
+                        let checks = userData.checks;
+                        dataLib.delete('users', phone, (err)=>{
+                            if(!err){
+                                //also delete all the checks related to this user
+                                let checksToDelete = typeof(checks) !== undefined && checks instanceof Array ? checks.length : 0 ;
+                                let deleteCheckErr = false;
+                                let checksDeleted = 0;
+
+                                if(checksToDelete > 0){
+                                    //iterate the checks and delete them
+                                    checks.forEach(checkId => {
+                                        dataLib.delete('checks', checkId, (err)=>{
+                                            if(err){
+                                                deleteCheckErr = true;
+                                            }
+                                            checksDeleted++;
+                                            if(checksDeleted == checksToDelete){
+                                                if(deleteCheckErr){
+                                                    callback(500, {'Error': 'An error occured whle deleting checks for the given user'})
+                                                }
+                                                else {
+                                                    callback(200);
+                                                }
+                                            }
+                                        });
+                                    });
+                                }
+                                else {
+                                    callback(200)
+                                }
+                            }
+                            else {
+                                console.log("error while deleting --> ", err);
+                                callback(400, {'Error': 'Couldn\'t delete the specified user'})
+                            }
+                        });
                     }
                     else {
-                        console.log("error while deleting --> ", err);
-                        callback(400, {'Error': 'Couldn\'t delete the specified user'})
+                        callback(404, {'Error': 'User doesn\'t exist'})
                     }
                 });
-
             }
             else {
                 callback(401, {'Error': 'Unauthenticated user is not allowed'});
@@ -358,6 +391,7 @@ handlers._tokens.verifyToken = (id, phone, callback)=>{
                 callback(true)
             }
             else {
+                console.log('token expired')
                 callback(false)
             }
         }
@@ -375,15 +409,268 @@ handlers.checks = (data, callback)=>{
         //call respective sub handler
         handlers._checks[data.method](data, callback);
     }
+    else {
+        callback(405, {'Error': 'Method not defined'})
+    }
 }
 
 //CONTAINERS FOR CHECKS
 handlers._checks = [];
 handlers._checks.get = (data, callback) => {
+    let id = typeof(data.queryString.id) == 'string' && data.queryString.id.length == 20 ? data.queryString.id : false;
+
+    //lookup the user with this check id
+    dataLib.read('checks', id, (err, checkData)=>{
+        if(!err && checkData){
+            let phone = typeof(checkData.phone)=='string' && checkData.phone.length > 0 ? checkData.phone : false;
+            if(phone){
+                //verify the token
+                let token = typeof(data.headers.token)=='string' && data.headers.token.length > 0 ? data.headers.token : false;
+                console.log("token is ->", token);
+                handlers._tokens.verifyToken(token, phone, (res)=>{
+                    if(res){
+                        console.log("token is ok for check get")
+                        //send the check details
+                        callback(200, checkData);
+                    }
+                    else {
+                        callback(403, {'Error': 'Unauthenticated user for given check'})
+                    }
+
+                });  
+            }
+            else {
+                console.log(err);
+                callback(403,{'Error': 'Could not get user details for given check'})
+            }
+        }
+        else{
+            callback(404, {'Error': 'Check not found'})
+        }
+    });
 };
-handlers._checks.post = (data, callback) => {};
-handlers._checks.put = (data, callback) => {};
-handlers._checks.delete = (data, callback) => {};
+//required : protocol, url, method,successCodes, timeoutSeconds
+//optional data : none
+handlers._checks.post = (data, callback) => {
+    let protocol = typeof(data.payload.protocol) == 'string' && ['http', 'https'].indexOf(data.payload.protocol) > -1 ? data.payload.protocol : false;
+    let url = typeof(data.payload.url) == 'string' && data.payload.url.trim().length > 0 ? data.payload.url.trim() : false; 
+    let method = typeof(data.payload.method) == 'string' && ['get', 'put', 'delete', 'post'].indexOf(data.payload.method) > -1 ? data.payload.method : false;
+    let successCodes = typeof(data.payload.successCodes) == 'object' && data.payload.successCodes instanceof Array && data.payload.successCodes.length > 0 ? data.payload.successCodes : false;
+    let timeoutSeconds = typeof(data.payload.timeoutSeconds) == 'number' && (data.payload.timeoutSeconds%1 == 0) && data.payload.timeoutSeconds >= 1 ? data.payload.timeoutSeconds : false;
+
+    if(protocol && url && method && successCodes && timeoutSeconds){
+        //get the token from the headers
+        let token = typeof(data.headers.token) == 'string' && data.headers.token.length > 0 ? data.headers.token : false;
+        if(token){
+            //verify the token
+            dataLib.read('tokens', token, (err, tokenData)=>{
+                if(!err && tokenData){
+                    //lookup the user
+                    let phone = tokenData.phone;
+                    dataLib.read('users', phone, (err, userData)=>{
+                        if(!err && userData){
+                            //look for checks used by the user
+                            let userChecks = typeof(userData.checks) == 'object' && userData.checks instanceof Array ? userData.checks : [];
+                            if(userChecks.length < config.maxChecks){
+                                //create a new check and add it to the userChecks list
+                                console.log("allowed to create a new check", userChecks.length+1);
+                                checkID = helpers.createRandomString(20);
+                                checkData = {
+                                 'id' : checkID,
+                                 'timeoutSeconds': timeoutSeconds,
+                                 'phone': phone,
+                                 'url': url,
+                                 'method': method,
+                                 'successCodes': successCodes,
+                                 'protocol': protocol  
+                                }
+
+                                //save the check with unique check id and reference the id to the user
+                                dataLib.create('checks', checkID, checkData, (err)=>{
+                                    if(!err){
+                                        //link the check id with the respective user
+                                        userData.checks = userChecks;
+                                        userData.checks.push(checkID)
+                                        dataLib.update('users', phone,userData, (err)=>{
+                                            if(!err){
+                                                console.log("check added successfully");
+                                                callback(200);
+                                            }
+                                            else{
+                                                console.log(err);
+                                                callback(500, {'Error': 'Unable to link the check'});
+                                            }
+                                        });
+                                    }
+                                    else {
+                                        console.log(err);
+                                        callback(500, {'Error': 'Could not create a new check'})
+                                    }
+                                });
+                            }
+                            else {
+                                callback(400, {'Error': 'Checks Limit exceeded'});
+                            }
+                        }
+                        else {
+                            console.log("valid token but no user with the token")
+                            callback(403, {'Error': 'Unauthenticated request with valid token'})
+                        }
+                    });
+
+                }
+                else {
+                    console.log("token not found in dataLib", err)
+                    callback(401, {'Error': 'Unauthenticated User'})
+                }
+            });
+        }
+        else {
+            callback(400, {'Error': 'Token not present'})
+        }
+    }
+    else {
+        console.log("Error recieving all details from the user")
+        callback(400, {'Error': 'Did not recive all the parameters'})
+    }
+};
+handlers._checks.put = (data, callback) => {
+    let id = typeof(data.payload.id) == 'string' && data.payload.id.length == 20 ? data.payload.id : false;
+
+    let protocol = typeof(data.payload.protocol) == 'string' && ['http', 'https'].indexOf(data.payload.protocol) > -1 ? data.payload.protocol : false;
+    let url = typeof(data.payload.url) == 'string' && data.payload.url.trim().length > 0 ? data.payload.url.trim() : false; 
+    let method = typeof(data.payload.method) == 'string' && ['get', 'put', 'delete', 'post'].indexOf(data.payload.method) > -1 ? data.payload.method : false;
+    let successCodes = typeof(data.payload.successCodes) == 'object' && data.payload.successCodes instanceof Array && data.payload.successCodes.length > 0 ? data.payload.successCodes : false;
+    let timeoutSeconds = typeof(data.payload.timeoutSeconds) == 'number' && (data.payload.timeoutSeconds%1 == 0) && data.payload.timeoutSeconds >= 1 ? data.payload.timeoutSeconds : false;
+
+    if(id){
+        //verify if the request is authenticated
+        dataLib.read('checks', id, (err,checkData)=>{
+            if(!err && checkData){
+                handlers._tokens.verifyToken(data.headers.token,checkData.phone, (verifyErr)=>{
+                    if(!err){
+                        if(protocol || url || method || successCodes || timeoutSeconds){
+                            //get check data 
+                            dataLib.read('checks', id, (err, checkData)=>{
+                                if(!err && checkData){
+                                    if(protocol){
+                                        checkData.protocol = protocol;
+                                    }
+                                    if(url){
+                                        checkData.url = url;
+                                    }
+                                    if(method){
+                                        checkData.method = method;
+                                    }
+                                    if(successCodes){
+                                        checkData.successCodes = successCodes;
+                                    }
+                                    if(timeoutSeconds){
+                                        checkData.timeoutSeconds = timeoutSeconds;
+                                    }
+                                    //now update the data
+                                    dataLib.update('checks', id, checkData, (err)=>{
+                                        if(!err){
+                                            callback(false);
+                                        }
+                                        else {
+                                            console.log("error while updating -> ", err);
+                                            callback(500, {'Error': 'Couldn\'t update the check details'});
+                                        }
+                                    });
+                                }
+                                else {
+                                    callback(500, {'Error': 'Unable to load check data'})
+                                }
+                            });
+                        }
+                        else {
+                            console.log("no data to edit")
+                            callback(400, {'Error': 'No Data recieved to update'})
+                        }
+                        
+                    }
+                    else {
+                        callback(403, {'Error': 'Unauthenticated request'})
+                    }
+                });
+            }
+            else {
+                callback(404, {'Error': 'Check not found'});
+            }
+        });
+
+    }
+    else {
+        callback(400, {'Error':'Missing check ID to delete'});
+    }
+};
+handlers._checks.delete = (data, callback) => {
+    let checkID = typeof(data.queryString.id)=='string' && data.queryString.id.length > 0 ? data.queryString.id : false;
+    let token = typeof(data.headers.token) == 'string' && data.headers.token.length > 0 ? data.headers.token : false;
+    if(checkID && token){
+        //lookup the user and verify its token
+        dataLib.read('checks', checkID, (err, checkData)=>{
+            if(!err && checkData){
+                console.log('verifying for ', token,' and ', checkData.phone );
+                //get the phone and verify the token
+                handlers._tokens.verifyToken(token, checkData.phone, (verfyres)=>{
+                    console.log(verfyres)
+                    if(verfyres){
+                        //delete the check and update the check list in user object too
+                        dataLib.delete('checks', checkID, (delerr)=>{
+                            if(!delerr){
+                                console.log("check deleted");
+                                //update the check list in the user checklist
+                                dataLib.read('users',checkData.phone, (err, userData)=>{
+                                    if(userData && !err){
+                                        let checks = userData.checks;
+                                        if(checks.length > 0){
+                                            checks.pop(checkID);
+                                            console.log("popped successfully")
+                                            userData.checks = checks
+                                            //now update the data
+                                            dataLib.update('users', checkData.phone,userData, (err)=>{
+                                                if(!err){
+                                                    console.log("updated successfully")
+                                                    callback(200);
+                                                }
+                                                else {
+                                                    callback(500, {'Error': 'Unable to load user check list after deleting'})
+                                                }
+                                            });
+                                        }
+                                        else {
+                                            console.log("checks list is already empty")
+                                            callback(400, {'Error': 'Check list is empty already'})
+                                        }
+                                    }
+                                    else {
+                                        console.log(err);
+                                        callback(500, {'Error': 'Unable to update user data'})
+                                    }
+                                });
+                            }
+                            else {
+                                callback(500, {'Error': 'Unable to delete check from db'});
+                            }
+                        });
+
+                    }
+                    else {
+                        callback(403, {'Error': 'Unauthenticated user for given token'})
+                    }
+                }); 
+            }
+            else {
+                callback(400, {'Error': 'Could not find given check id'});
+            }
+        });
+    }
+    else {
+        callback(400, {'Error': 'Check id/token not given'});
+    }
+};
 //CONTAINERS END
 
 module.exports = handlers;
