@@ -29,6 +29,11 @@ var handlers = require('./lib/handlers');
 //importing helpers
 var helpers = require('./lib/helpers');
 
+/* 
+NOTE : This is the way how you can send SMS with twilio redentials
+helpers.sendTwilioSMS('9971696729', 'Hello', (res)=>{
+    console.log('the response after sending a message is ', res);
+}); */
 //To read Payload
 var stringDecoder = require('string_decoder').StringDecoder;
 //creating a server from the http module which defines what to do when the server is created

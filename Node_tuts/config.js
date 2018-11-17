@@ -16,7 +16,15 @@ environments.staging = {
     'httpsPort': 3001,
     'envName': "staging",
     'hashingSecret': "ObviouslyASecret",
-    'maxChecks': 5
+    'maxChecks': 5,
+    'twilio' : {
+        'fromPhone': +919971696729,
+        'fromPhoneOK': +15005550006,
+        'sid': 'AC2dc051e81b708fa2e98a76bd1bfcb6e6',
+        'auth': '5242098a97503afe35c3e2faa04f2e68',
+        'sidOK': 'ACb32d411ad7fe886aac54c665d25e5c5d',
+        'authOK': '9455e3eb3109edc12e3d8c92768f7a67'
+    }
 };
 
 //configuration for production
@@ -25,7 +33,15 @@ environments.production = {
     'httpsPort': 5001,
     'envName': "production",
     'hashingSecret': "ObviouslyASecretAgain",
-    'maxChecks': 5
+    'maxChecks': 5,
+    'twilio' : {
+        'fromPhone': +919971696729,
+        'fromPhoneOK': +15005550006,
+        'sid': 'AC2dc051e81b708fa2e98a76bd1bfcb6e6',
+        'auth': '5242098a97503afe35c3e2faa04f2e68',
+        'sidOK': 'ACb32d411ad7fe886aac54c665d25e5c5d',
+        'authOK': '9455e3eb3109edc12e3d8c92768f7a67'
+    }
 };
 
 //detect if user entered any environment argument on the command line
