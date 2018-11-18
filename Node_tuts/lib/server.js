@@ -169,7 +169,14 @@ server.unifiedServer = function(req,res){
             res.end(payload);
             
             //LOG IF YOU NEED TO THE CONSOLE
-            console.log("response on ", trimmedPath, " ->", statusCode, ",",payload);
+            if(statusCode = 200){
+                //display in green
+                console.log('\x1b[32m%s\x1b[0m',"response on ", method +" " +trimmedPath, " ->", statusCode);       
+            }
+            else {
+                //for any non 200 status, display in red
+                console.log('\x1b[31m%s\x1b[0m',"response on ", method +" " +trimmedPath, " ->", statusCode);
+            }
         });
     });
 };
@@ -195,11 +202,11 @@ server.init = ()=>{
     //this line actually starts the server, now when the port opens you will see the 
     //below text on the screen. To be able to access the port you can write
     server.httpServer.listen(config.httpPort, function(){
-        console.log("the server is listening on port",config.httpPort, " [",config.envName,"] ");
+        console.log('\x1b[36m%s\x1b[0m',"the server is listening on port "+config.httpPort + " ["+config.envName+"] ");
     });
 
     server.httpsServer.listen(config.httpsPort, function(){
-        console.log("the server is listening on port",config.httpsPort, " [",config.envName,"] ");
+        console.log('\x1b[35m%s\x1b[0m',"the server is listening on port "+config.httpsPort + " ["+config.envName+"] ");
     });
 };
 

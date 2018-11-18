@@ -216,6 +216,7 @@ workers.processCheckOutcome = (orgCheckData, checkOutcome)=>{
 
 //init function to be called by index.js
 workers.init = ()=>{
+    console.log('\x1b[33m%s\x1b[0m','Workers up and running in the Background');
     //execute all checks once
     workers.gatherAllChecks();
     //loop through the checks after a set interval
