@@ -8,8 +8,12 @@ if [ "${ans,,}" == "y" ]
 then
       cd ${PWD}
       mkdir .data
+      mkdir .logs
       cd .data
       mkdir users
       mkdir tokens
       mkdir checks
+      cd ..
+      cd .logs
+      mkdir .compresssed
 fi

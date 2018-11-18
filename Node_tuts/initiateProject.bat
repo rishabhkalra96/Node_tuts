@@ -1,4 +1,4 @@
 @echo off
 
-md .data .data\users .data\tokens .data\checks
+md .data .logs .logs\.compressed .data\users .data\tokens .data\checks
 node index.js
