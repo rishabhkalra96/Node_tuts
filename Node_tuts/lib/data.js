@@ -114,5 +114,22 @@ lib.delete = (dir, file, callback)=>{
         }
     });
 };
+
+lib.list = (dir, callback)=>{
+    //list the files
+    fs.readdir(lib.baseDir+'/'+dir+'/', (err, directoryList)=>{
+        if(!err && directoryList.length > 0){
+            let trimmedFileNames = [];
+            directoryList.forEach((fileName)=>{
+                trimmedFileNames.push(fileName.replace('.json', ''));
+            });
+            callback(false, trimmedFileNames);
+        }
+        else {
+            console.log("no files in the mentioned directory ", dir)
+            callback(err,directoryList);
+        }
+    });
+};
 //export the library object
 module.exports = lib;
