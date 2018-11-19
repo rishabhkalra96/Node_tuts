@@ -18,6 +18,7 @@ handlers.ping = (data, callback)=>{
 };
 
 handlers.notFound = (data, callback)=>{
+    console.log("its not found")
 
     callback(404);
 };

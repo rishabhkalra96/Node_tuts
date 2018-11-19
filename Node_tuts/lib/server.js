@@ -153,15 +153,14 @@ server.unifiedServer = function(req,res){
         //send the data and look for callback
         selectedHandler(data, (statusCode, payload) => {
             //send a default status code of 200 if no status code is defined
-            var statusCode = typeof(statusCode) == 'number' ? statusCode : 200;
+            statusCode = typeof(statusCode) == 'number' ? statusCode : 200;
             //send a default payload of empty {} if no payload is defined
-            var payload = typeof(payload) == 'object' ? JSON.stringify(payload) : JSON.stringify({});
+            payload = typeof(payload) == 'object' ? JSON.stringify(payload) : JSON.stringify({});
 
             //add a specific format in which the data is to be sent to the client
             //NOTE : You cannot set header after writing the head, it will throw an error
             //best practice is to always set the headers first and then do everything else
             res.setHeader('Content-Type', 'application/json');
-            
             //now returning the res to the client according to the statusCode and payload recieved from the handler
             res.writeHead(statusCode);
             
@@ -169,7 +168,7 @@ server.unifiedServer = function(req,res){
             res.end(payload);
             
             //LOG IF YOU NEED TO THE CONSOLE
-            if(statusCode = 200){
+            if(statusCode == 200){
                 //display in green
                 console.log('\x1b[32m%s\x1b[0m',"response on ", method +" " +trimmedPath, " ->", statusCode);       
             }
