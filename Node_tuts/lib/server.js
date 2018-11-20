@@ -1,8 +1,4 @@
-/*
-Module to Handle all server related tasks
- */
 
-//importing the configuration
 const config = require('../config');
 
 //Dependencies
@@ -12,8 +8,6 @@ const https = require('https');
 var fs = require('fs');
 //path module to access directories
 var path = require('path');
-//a built in module from node named url which is used to parse / read urls the user requests
-//url parsing is done inside the callback function of createserver
 var url = require('url');
 
 //importing the handlers
@@ -22,14 +16,6 @@ var handlers = require('./handlers');
 //importing helpers
 var helpers = require('./helpers');
 
-/* 
-NOTE : This is the way how you can send SMS with twilio redentials
-helpers.sendTwilioSMS('9971696729', 'Hello', (res)=>{
-    console.log('the response after sending a message is ', res);
-}); */
-
-
-//To read Payload
 var stringDecoder = require('string_decoder').StringDecoder;
 
 
@@ -186,19 +172,8 @@ server.unifiedServer = function(req,res){
     });
 };
 
-//DEFINING ROUTERS AND THEIR HANDLERS
-
-/* 
-*A routing technique is a way to route the incomingrequests to specific handlers. This is usefull
-*to define a specific functionality according to a specific request. For example, if a route is of
-*sampler type, then a specific handler defined for sampler will be called.
-*/
-
-//defining a router
-//Now there are a lot of static page rendering routers also which will render a specific page on
-//visiting
 server.router = {
-    '' : handlers.index,
+    'index' : handlers.index,
     'account/create': handlers.accountCreate,
     'account/edit': handlers.accountEdit,
     'account/deleted': handlers.accountDeleted,
@@ -215,8 +190,7 @@ server.router = {
 
 //intitialise the server file
 server.init = ()=>{
-    //this line actually starts the server, now when the port opens you will see the 
-    //below text on the screen. To be able to access the port you can write
+    
     server.httpServer.listen(config.httpPort, function(){
         console.log('\x1b[36m%s\x1b[0m',"the server is listening on port "+config.httpPort + " ["+config.envName+"] ");
     });
