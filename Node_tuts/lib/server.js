@@ -154,18 +154,18 @@ server.unifiedServer = function(req,res){
         selectedHandler(data, (statusCode, payload, contentType) => {
             //send a default status code of 200 if no status code is defined
             statusCode = typeof(statusCode) == 'number' ? statusCode : 200;
-            //set contentType to json if no contentType is provided for rendering
             contentType = typeof(contentType) == 'string' ? contentType : 'json';
             //add a specific format in which the data is to be sent to the client
             //NOTE : You cannot set header after writing the head, it will throw an error
             //best practice is to always set the headers first and then do everything else
+
             if(contentType == 'json'){
-                res.setHeader('Content-Type', 'application/json');
                 payload = typeof(payload) == 'object' ? JSON.stringify(payload) : JSON.stringify({});
+                res.setHeader('Content-Type', 'application/json');
             }
-            if (contentType == 'html'){
-                res.setHeader('Content-Type', 'text/html');
-                payload = typeof(payload) == 'string' ? payload : '';
+            if(contentType == 'html'){
+                payload = typeof(payload) == 'string' ? payload : 'plain text returned';
+                res.setHeader('Content-Type', 'text/plain');
             }
             //now returning the res to the client according to the statusCode and payload recieved from the handler
             res.writeHead(statusCode);
