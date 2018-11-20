@@ -14,7 +14,7 @@ let handlers = {};
 
 //a ping route handler so that we can check if the server is alive or dead
 handlers.ping = (data, callback)=>{
-    callback(200);
+    callback(undefined, undefined, 'html');
 };
 
 handlers.notFound = (data, callback)=>{
