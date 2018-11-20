@@ -146,12 +146,12 @@ server.unifiedServer = function(req,res){
             //best practice is to always set the headers first and then do everything else
 
             if(contentType == 'json'){
-                payload = typeof(payload) == 'object' ? JSON.stringify(payload) : JSON.stringify({});
                 res.setHeader('Content-Type', 'application/json');
+                payload = typeof(payload) == 'object' ? JSON.stringify(payload) : JSON.stringify({});
             }
             if(contentType == 'html'){
+                res.setHeader('Content-Type', 'text/html');
                 payload = typeof(payload) == 'string' ? payload : 'plain text returned';
-                res.setHeader('Content-Type', 'text/plain');
             }
             //now returning the res to the client according to the statusCode and payload recieved from the handler
             res.writeHead(statusCode);

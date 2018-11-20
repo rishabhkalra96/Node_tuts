@@ -19,7 +19,20 @@ let handlers = {};
 */
 
 handlers.index = (data, callback)=>{
-    callback(200, undefined, 'html');
+    //only supports GET
+    if (data.method == 'get'){
+        helpers.getTemplate('index', (err, templateData)=>{
+            if(!err && templateData){
+                callback(200, templateData, 'html');
+            }
+            else {
+                callback(500, undefined, 'html')
+            }
+        });
+    }
+    else {
+        callback(405, undefined, 'html');
+    }
 };
 
 

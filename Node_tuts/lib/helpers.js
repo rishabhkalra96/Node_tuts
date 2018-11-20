@@ -9,6 +9,8 @@ var crypto = require('crypto');
 var config = require('../config');
 var queryString = require('querystring');
 var https = require('https');
+var path = require('path');
+var fs = require('fs');
 
 //main code
 var helpers = {};
@@ -95,6 +97,26 @@ helpers.sendTwilioSMS = (phone, msg, callback) =>{
         console.log("phone/msg not present for twilio helper")
         callback('Phone or message not defined to send');
     }
+};
+
+//template fetcher
+helpers.getTemplate = (templateName, callback)=>{
+    templateName = typeof(templateName) == 'string' && templateName.length > 0 ? templateName : false;
+    let templateDir = path.join(__dirname, '/../templates/');
+    if(templateName){
+        fs.readFile(templateDir+templateName+'.html', 'utf-8', (err, fileData)=>{
+            if(!err && fileData){
+                callback(false, fileData);
+            }
+            else {
+                callback('An error occured while reading the template / Not found')
+            }
+        });
+    }
+    else{
+        callback('A valid template name was not specified')
+    }
+
 };
 
 //export this module
