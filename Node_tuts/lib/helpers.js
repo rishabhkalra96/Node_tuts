@@ -100,13 +100,15 @@ helpers.sendTwilioSMS = (phone, msg, callback) =>{
 };
 
 //template fetcher
-helpers.getTemplate = (templateName, callback)=>{
+helpers.getTemplate = (templateName, data, callback)=>{
     templateName = typeof(templateName) == 'string' && templateName.length > 0 ? templateName : false;
     let templateDir = path.join(__dirname, '/../templates/');
     if(templateName){
         fs.readFile(templateDir+templateName+'.html', 'utf-8', (err, fileData)=>{
             if(!err && fileData){
-                callback(false, fileData);
+                //interpolate al the values used in the template
+                let finalTemplate = helpers.interpolate(fileData, data);
+                callback(false, finalTemplate);
             }
             else {
                 callback('An error occured while reading the template / Not found')
@@ -117,6 +119,55 @@ helpers.getTemplate = (templateName, callback)=>{
         callback('A valid template name was not specified')
     }
 
+};
+
+helpers.addUniversalTemplates = (str, data, callback)=>{
+    str = typeof(str) == 'string' && str.length > 0 ? str : '';
+    data = typeof(data) == 'object' && data !== null ? data : {};
+
+    //get the header and footer and set it into the string accordingly
+    helpers.getTemplate('_header', data, (err, headerData)=>{
+        if(!err && headerData.length > 0){
+            //get the footer
+            helpers.getTemplate('_footer', data, (err, footerData)=>{
+                if (!err && footerData.length > 0){
+                    let fullTemplate = headerData + str + footerData;
+                    console.log("template generated");
+                    callback(false, fullTemplate);
+                }
+                else {
+                    callback('Could not find footer for some reason ', err);
+                }
+            });
+        }
+        else {
+            callback('Could not get the header from the directory for some reason ', err)
+        }
+    });
+};
+
+helpers.interpolate = (str, data)=>{
+    str = typeof(str) == 'string' && str.length > 0 ? str : '';
+    data = typeof(data) == 'object' && data !== null ? data : {};
+
+    //Find and replace the global values in the template with the values in the global config file
+    for(var keyName in config.templateGlobals){
+        if(config.templateGlobals.hasOwnProperty(keyName)){
+            console.log("setting 1 ->", data['global.'+keyName], ' to ', config.templateGlobals[keyName]);
+            data['global.'+keyName] = config.templateGlobals[keyName];
+        }
+    }
+
+    for (var key in data){
+        if(data.hasOwnProperty(key) && typeof(data[key]) == 'string'){
+            let replace = data[key];
+            let find = '{'+key+'}';
+            console.log("setting 2 ->", find, ' to ', replace);
+            str = str.replace(find, replace);
+        }
+    }
+
+    return str;
 };
 
 //export this module

@@ -24,6 +24,12 @@ environments.staging = {
         'auth': '5242098a97503afe35c3e2faa04f2e68',
         'sidOK': 'ACb32d411ad7fe886aac54c665d25e5c5d',
         'authOK': '9455e3eb3109edc12e3d8c92768f7a67'
+    },
+    'templateGlobals': {
+        'appName': 'UptimeChecker',
+        'companyName': 'Dummy-Company',
+        'yearCreated': '2018',
+        'baseUrl': 'http://localhost:3000/'
     }
 };
 
@@ -41,6 +47,12 @@ environments.production = {
         'auth': '5242098a97503afe35c3e2faa04f2e68',
         'sidOK': 'ACb32d411ad7fe886aac54c665d25e5c5d',
         'authOK': '9455e3eb3109edc12e3d8c92768f7a67'
+    },
+    'templateGlobals': {
+        'appName': 'UptimeChecker',
+        'companyName': 'Dummy-Company',
+        'yearCreated': '2018',
+        'baseUrl': 'http://localhost:5000/'
     }
 };
 

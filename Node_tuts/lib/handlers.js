@@ -21,9 +21,25 @@ let handlers = {};
 handlers.index = (data, callback)=>{
     //only supports GET
     if (data.method == 'get'){
-        helpers.getTemplate('index', (err, templateData)=>{
+
+        let templateSpecificData = {
+            'head.title': 'This is a random title',
+            'head.description': 'This is the description',
+            'body.title': 'This is the body',
+             'body.class': 'index'
+        }
+        helpers.getTemplate('index', templateSpecificData, (err, templateData)=>{
             if(!err && templateData){
-                callback(200, templateData, 'html');
+                //add the header and footer 
+                helpers.addUniversalTemplates(templateData, templateSpecificData, (err, tempData)=>{
+                    if(!err && tempData.length > 0){
+                        console.log("perfect template")
+                        callback(200, tempData, 'html');
+                    }
+                    else {
+                        callback(500, 'Could not generate complete template', 'html')
+                    }
+                })
             }
             else {
                 callback(500, undefined, 'html')
