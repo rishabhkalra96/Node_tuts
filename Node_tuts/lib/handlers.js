@@ -12,9 +12,25 @@ let config = require('../config');
 //main code
 let handlers = {};
 
+
+/*
+*   HTML API HANDLERS BELOW
+*
+*/
+
+handlers.index = (data, callback)=>{
+    callback(200, undefined, 'html');
+};
+
+
+
+/*
+*   JSON API HANDLERS BELOW
+*
+*/
 //a ping route handler so that we can check if the server is alive or dead
 handlers.ping = (data, callback)=>{
-    callback(undefined, undefined, 'html');
+    callback(200);
 };
 
 handlers.notFound = (data, callback)=>{
