@@ -15,5 +15,5 @@ then
       mkdir checks
       cd ..
       cd .logs
-      mkdir .compresssed
+      mkdir .compressed
 fi
