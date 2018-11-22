@@ -1,0 +1,3 @@
+app = {}
+
+console.log("hekki");

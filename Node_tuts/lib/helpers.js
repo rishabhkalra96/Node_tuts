@@ -15,6 +15,27 @@ var fs = require('fs');
 //main code
 var helpers = {};
 
+helpers.readStaticAsset = (fileName, callback)=>{
+    fileName = typeof(fileName) == 'string' && fileName.length > 0 ? fileName : false;
+    if(fileName){
+        //specify the directory where to lookup the static assets
+        let publicDir = path.join(__dirname, '/../public/');
+        //read the file, err thrown if no file exists with the name
+        fs.readFile(publicDir+fileName, (err, fileData)=>{
+            if (!err && fileData.length > 0){
+                console.log("file -> ", fileName, ' found');
+                callback(false, fileData);
+            }
+            else {
+                callback('No file could be found / read')
+            }
+        });
+    }
+    else {
+        callback('Not a valid file name')
+    }
+};
+
 //create SHA256 hash
 helpers.hash = (str)=>{
     if(str.length>0 && typeof(str) == 'string'){

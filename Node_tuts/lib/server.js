@@ -87,7 +87,7 @@ server.unifiedServer = function(req,res){
     //after trimming both will become get-api/food (replacing slashes with blank/nothing but do nothing
     //if the slashes in the middle)
     var trimmedPath = path.replace(/^\/+|\/+$/g, '');
-
+console.log("trimmed path made is of type ---->", typeof(trimmedPath), " and ", trimmedPath.length);
     //Read Headers
     var urlHeaders = req.headers;
 
@@ -125,18 +125,25 @@ server.unifiedServer = function(req,res){
     //NOTE : same type of event is read by res.end() also.
     req.on('end', () => {
         bufferPayload += decoder.end();
-
+        console.log("data before using trimmed path ->", trimmedPath)
         //ROUTE TO A SPECIFIC HANDLER BASED ON ROUTING OBJECT, ROUTE TO NOTFOUND IF NOT FOUND
-        var selectedHandler = typeof(server.router[trimmedPath]) !== 'undefined' ? handlers[trimmedPath] : handlers.notFound;
+        var selectedHandler = typeof(server.router[trimmedPath]) === undefined ? handlers.notFound : handlers.trimmedPath
+        //if the handler is for public (/public/), always call the public handler, else let it function usually
+        selectedHandler = trimmedPath.indexOf('public/') > -1 ? handlers.public : selectedHandler;
+        console.log('selected hndler type 2 ---->', typeof(selectedHandler), selectedHandler)
         //once the handler is specified, we need to send some data to it as expected by the handler
+        console.log("selected handler initially is -> server.router["+trimmedPath+"]");
+        
         var data  = {
             'headers': urlHeaders,
             'method': method,
             'pathname': trimmedPath,
             'payload': helpers.convertJSONstr2JSON(bufferPayload),
-            'queryString': queryObject
+            'queryString': queryObject,
+            'trimmedPath': trimmedPath
         }
         //send the data and look for callback
+        console.log('selected hndler type 3 ---->', typeof(selectedHandler))
         selectedHandler(data, (statusCode, payload, contentType) => {
             //send a default status code of 200 if no status code is defined
             statusCode = typeof(statusCode) == 'number' ? statusCode : 200;
@@ -152,6 +159,26 @@ server.unifiedServer = function(req,res){
             if(contentType == 'html'){
                 res.setHeader('Content-Type', 'text/html');
                 payload = typeof(payload) == 'string' ? payload : 'plain text returned';
+            }
+            if(contentType == 'favicon'){
+                res.setHeader('Content-Type', 'image/x-icon');
+                payload = typeof(payload) !== 'undefined' ? payload : 'plain favicon returned';
+            }
+            if(contentType == 'png'){
+                res.setHeader('Content-Type', 'image/png');
+                payload = typeof(payload) !== 'undefined' ? payload : 'plain png returned';
+            }
+            if(contentType == 'jpg'){
+                res.setHeader('Content-Type', 'image/jpeg');
+                payload = typeof(payload) !== 'undefined' ? payload : 'plain jpeg returned';
+            }
+            if(contentType == 'css'){
+                res.setHeader('Content-Type', 'text/css');
+                payload = typeof(payload) !== 'undefined' ? payload : 'plain css returned';
+            }
+            if(contentType == 'plain'){
+                res.setHeader('Content-Type', 'text/plain');
+                payload = typeof(payload) !== 'undefined' ? payload : 'plain text returned';
             }
             //now returning the res to the client according to the statusCode and payload recieved from the handler
             res.writeHead(statusCode);
@@ -185,7 +212,10 @@ server.router = {
     'ping': handlers.ping,
     'api/users': handlers.users,
     'api/tokens': handlers.tokens,
-    'api/checks': handlers.checks
+    'api/checks': handlers.checks,
+    'favicon.ico': handlers.favicon,
+    'public': handlers.public
+
 };
 
 //intitialise the server file

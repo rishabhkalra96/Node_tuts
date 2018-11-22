@@ -51,7 +51,59 @@ handlers.index = (data, callback)=>{
     }
 };
 
+handlers.favicon = (data, callback)=>{
+    if(data.method == 'get'){
+        helpers.readStaticAsset('favicon.ico', (err, staticData)=>{
+            if(!err && staticData){
+                callback(200, staticData, 'favicon');
+            }
+            else {
+                console.log("didnt find any favicon")
+                callback(500)
+            }
+        });
+    }
+    else {
+        callback(405)
+    }
+};
 
+handlers.public = (data, callback)=>{
+    if(data.method == 'get'){
+        let trimmedAssetName = data.trimmedPath.replace('public/', '');
+        if(trimmedAssetName.length > 0){
+            helpers.readStaticAsset(trimmedAssetName, (err, assetData)=>{
+                if(!err && assetData.length > 0){
+                    //determine the file extension
+                    let contentType = 'plain';
+                    if(trimmedAssetName.indexOf('.css')> -1){
+                        contentType = 'css'
+                    }
+                    else if(trimmedAssetName.indexOf('.jpg')> -1){
+                        contentType = 'jpg'
+                    }
+                    else if(trimmedAssetName.indexOf('.png')> -1){
+                        contentType = 'png'
+                    }
+                    else if (trimmedAssetName.indexOf('ico') > -1){
+                        contentType = 'favicon'
+                    }
+                    callback(200, assetData, contentType);
+                }
+                else {
+                    callback(404)
+                }
+            });
+        }
+        else {
+            console.log('No specified asset found in public')
+            callback(404);
+        }
+    }
+    else {
+        callback(405);
+    }
+};
 
 /*
 *   JSON API HANDLERS BELOW
