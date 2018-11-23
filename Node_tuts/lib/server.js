@@ -125,14 +125,11 @@ console.log("trimmed path made is of type ---->", typeof(trimmedPath), " and ", 
     //NOTE : same type of event is read by res.end() also.
     req.on('end', () => {
         bufferPayload += decoder.end();
-        console.log("data before using trimmed path ->", trimmedPath)
         //ROUTE TO A SPECIFIC HANDLER BASED ON ROUTING OBJECT, ROUTE TO NOTFOUND IF NOT FOUND
-        var selectedHandler = typeof(server.router[trimmedPath]) === undefined ? handlers.notFound : handlers.trimmedPath
+        var selectedHandler = typeof(server.router[trimmedPath]) !== "undefined" ? server.router[trimmedPath] : handlers.notFound;
         //if the handler is for public (/public/), always call the public handler, else let it function usually
         selectedHandler = trimmedPath.indexOf('public/') > -1 ? handlers.public : selectedHandler;
-        console.log('selected hndler type 2 ---->', typeof(selectedHandler), selectedHandler)
         //once the handler is specified, we need to send some data to it as expected by the handler
-        console.log("selected handler initially is -> server.router["+trimmedPath+"]");
         
         var data  = {
             'headers': urlHeaders,
