@@ -87,7 +87,6 @@ server.unifiedServer = function(req,res){
     //after trimming both will become get-api/food (replacing slashes with blank/nothing but do nothing
     //if the slashes in the middle)
     var trimmedPath = path.replace(/^\/+|\/+$/g, '');
-console.log("trimmed path made is of type ---->", typeof(trimmedPath), " and ", trimmedPath.length);
     //Read Headers
     var urlHeaders = req.headers;
 
@@ -140,7 +139,6 @@ console.log("trimmed path made is of type ---->", typeof(trimmedPath), " and ", 
             'trimmedPath': trimmedPath
         }
         //send the data and look for callback
-        console.log('selected hndler type 3 ---->', typeof(selectedHandler))
         selectedHandler(data, (statusCode, payload, contentType) => {
             //send a default status code of 200 if no status code is defined
             statusCode = typeof(statusCode) == 'number' ? statusCode : 200;

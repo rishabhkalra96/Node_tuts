@@ -174,7 +174,6 @@ helpers.interpolate = (str, data)=>{
     //Find and replace the global values in the template with the values in the global config file
     for(var keyName in config.templateGlobals){
         if(config.templateGlobals.hasOwnProperty(keyName)){
-            console.log("setting 1 ->", data['global.'+keyName], ' to ', config.templateGlobals[keyName]);
             data['global.'+keyName] = config.templateGlobals[keyName];
         }
     }
@@ -183,7 +182,6 @@ helpers.interpolate = (str, data)=>{
         if(data.hasOwnProperty(key) && typeof(data[key]) == 'string'){
             let replace = data[key];
             let find = '{'+key+'}';
-            console.log("setting 2 ->", find, ' to ', replace);
             str = str.replace(find, replace);
         }
     }
