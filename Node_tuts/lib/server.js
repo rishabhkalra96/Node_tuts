@@ -197,7 +197,7 @@ console.log("trimmed path made is of type ---->", typeof(trimmedPath), " and ", 
 };
 
 server.router = {
-    'index' : handlers.index,
+    '' : handlers.index,
     'account/create': handlers.accountCreate,
     'account/edit': handlers.accountEdit,
     'account/deleted': handlers.accountDeleted,
