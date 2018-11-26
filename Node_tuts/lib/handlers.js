@@ -136,6 +136,38 @@ handlers.accountCreate = (data, callback)=>{
     }
 };
 
+//Create Account
+handlers.sessionCreate = (data, callback)=>{
+    //only supports GET
+    if (data.method == 'get'){
+
+        let templateSpecificData = {
+            'head.title': 'Login to your Account',
+            'head.description': 'Enter your registered phone number and password to log in.',
+             'body.class': 'sessionCreate'
+        }
+        helpers.getTemplate('sessionCreate', templateSpecificData, (err, templateData)=>{
+            if(!err && templateData){
+                //add the header and footer 
+                helpers.addUniversalTemplates(templateData, templateSpecificData, (err, tempData)=>{
+                    if(!err && tempData.length > 0){
+                        callback(200, tempData, 'html');
+                    }
+                    else {
+                        callback(500, 'Could not generate complete template', 'html')
+                    }
+                })
+            }
+            else {
+                callback(500, undefined, 'html')
+            }
+        });
+    }
+    else {
+        callback(405, undefined, 'html');
+    }
+};
+
 /*
 *   JSON API HANDLERS BELOW
 *
