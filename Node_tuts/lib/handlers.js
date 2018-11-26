@@ -23,9 +23,8 @@ handlers.index = (data, callback)=>{
     if (data.method == 'get'){
 
         let templateSpecificData = {
-            'head.title': 'This is a random title',
-            'head.description': 'This is the description',
-            'body.title': 'This is the body',
+            'head.title': 'Uptime Monitor',
+            'head.description': 'Uptime monitor gives you a unique ability to monitor any HTTP/HTTPS websites. Whenever a site goes down or back up, we\'ll notify you via sms',
              'body.class': 'index'
         }
         helpers.getTemplate('index', templateSpecificData, (err, templateData)=>{
