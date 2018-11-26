@@ -104,6 +104,38 @@ handlers.public = (data, callback)=>{
     }
 };
 
+//Create Account
+handlers.accountCreate = (data, callback)=>{
+    //only supports GET
+    if (data.method == 'get'){
+
+        let templateSpecificData = {
+            'head.title': 'Create an Account',
+            'head.description': 'It\'s easy and takes less than 30 seconds to get an account',
+             'body.class': 'accountCreate'
+        }
+        helpers.getTemplate('accountCreate', templateSpecificData, (err, templateData)=>{
+            if(!err && templateData){
+                //add the header and footer 
+                helpers.addUniversalTemplates(templateData, templateSpecificData, (err, tempData)=>{
+                    if(!err && tempData.length > 0){
+                        callback(200, tempData, 'html');
+                    }
+                    else {
+                        callback(500, 'Could not generate complete template', 'html')
+                    }
+                })
+            }
+            else {
+                callback(500, undefined, 'html')
+            }
+        });
+    }
+    else {
+        callback(405, undefined, 'html');
+    }
+};
+
 /*
 *   JSON API HANDLERS BELOW
 *
@@ -160,9 +192,9 @@ handlers._users.post = function(data, callback){
     let lastName = typeof(data.payload.lastName) == 'string' && data.payload.lastName.trim().length > 0 ? data.payload.lastName.trim() : false;
     let phone = typeof(data.payload.phone) == 'string' && data.payload.phone.trim().length == 10 ? data.payload.phone.trim() : false;
     let password = typeof(data.payload.password) == 'string' && data.payload.password.trim().length > 0 ? data.payload.password.trim() : false;
-    let tosAggreement = typeof(data.payload.tosAggreement) == 'boolean' && data.payload.tosAggreement == true ? true : false;
+    let tosAgreement = typeof(data.payload.tosAgreement) == 'boolean' && data.payload.tosAgreement == true ? true : false;
     
-    if (firstName && lastName && phone && password && tosAggreement){
+    if (firstName && lastName && phone && password && tosAgreement){
         //check if the user is already registered based on the phoneNumber
         
         dataLib.read('users', phone, (err, data)=>{
@@ -182,7 +214,7 @@ handlers._users.post = function(data, callback){
                     dataObj.lastName = lastName;
                     dataObj.phone = phone;
                     dataObj.hashedPassword = hashedPass;
-                    dataObj.tosAggreement = tosAggreement;
+                    dataObj.tosAgreement = tosAgreement;
 
                     //create the new user
                     dataLib.create('users', dataObj.phone, dataObj, (err)=>{
