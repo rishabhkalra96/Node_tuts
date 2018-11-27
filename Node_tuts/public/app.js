@@ -17,26 +17,28 @@ app.client = {}
 
 //interface for making API calls
 app.client.request = (headers, path, method, queryStringObject, payload, callback)=>{
-
     //setting the deafaults
     headers = typeof(headers) == 'object' && headers !== null ? headers : {};
     path = typeof(path) == 'string'? path : '/';
     method = typeof(method) == 'string' && ['POST', 'GET', 'PUT', 'DELETE'].indexOf(method) > -1 ? method.toUpperCase() : 'GET';
-    queryStringObject = typeof(queryStringObject) == 'string' && queryStringObject !== null ? queryStringObject : {};
+    queryStringObject = typeof(queryStringObject) == 'object' && queryStringObject !== null ? queryStringObject : {};
     payload = typeof(payload) == 'object' && payload !== null ? payload : {};
     callback = typeof(callback) == 'function' ? callback : false;
 
     //if queryString is provided, construct a url from those queryString
-    let requestUrl = path+'?';
+    let requestUrl = path;
     let counter = 0;
     for(queryKey in queryStringObject){
         if(queryStringObject.hasOwnProperty(queryKey)){
-            counter++;
             //add & if there is atleast one query parameter present in the url
+            if (counter == 0){
+                requestUrl += '?';
+            }
             if(counter > 0){
                 requestUrl += '&';
             }
             requestUrl += queryKey + '=' + queryStringObject[queryKey];
+            counter++;
         }
     }
 
@@ -111,7 +113,6 @@ app.bindForms = ()=>{
                 payload[elements[i].name] = valueOfelement;
             }
         }
-        console.log("payload now is ->", payload);
 
         //now call the API to submit the form
         app.client.request(undefined, path, method, undefined, payload, (statusCode, responsePayload)=>{
@@ -173,14 +174,17 @@ app.getSessionToken = ()=>{
         try{
             let token = JSON.parse(tokenString);
             app.config.sessionToken = token;
-            if(typeof(token) == 'object'){
+            if(typeof(token) !== 'undefined'){
+                console.log("logged in")
                 app.setLoggedInClass(true);
             }
             else {
+                console.log("logged out")
                 app.setLoggedInClass(false);
             }
         }
         catch(e){
+            console.log("error while getting token from ls ", e);
             app.config.sessionToken = false;
             app.setLoggedInClass(false);
         }
@@ -191,14 +195,19 @@ app.getSessionToken = ()=>{
 app.setSessionToken = (tokenPayload)=>{
     app.config.sessionToken = tokenPayload.id;
     let stringToken = JSON.stringify(tokenPayload.id);
-    localStorage.setItem('token', stringToken);
-    if(typeof(tokenPayload) == 'object'){
-        app.setLoggedInClass(true);
-        return true;
+    if(stringToken !== 'undefined'){
+        localStorage.setItem('token', stringToken);
+        if(typeof(tokenPayload) == 'object'){
+            app.setLoggedInClass(true);
+            return true;
+        }
+        else {
+            app.setLoggedInClass(true);
+            return false;
+        }
     }
     else {
-        app.setLoggedInClass(true);
-        return false;
+        console.log("no user")
     }
 }
 
@@ -225,20 +234,19 @@ app.tokenRenewalLoop = ()=>{
 
   //logic to renew token
   app.renewToken = (callback)=>{
-      console.log("renew triggered")
-      let currentToken = typeof(app.config.sessionToken) == 'object'?app.config.sessionToken:false;
+      let currentToken = typeof(app.config.sessionToken) == 'string' ? app.config.sessionToken:false;
       if(currentToken){
           let payload = {
-              "id": currentToken.id,
+              "id": currentToken,
               "extend": true
           }
           app.client.request(undefined, 'api/tokens', 'PUT', undefined, payload, (statusCode, resPayload)=>{
             if(statusCode == 200){
-                newPayload = {"id": currentToken.id}
-                app.client.request(undefined, '/api/tokens', 'GET', undefined, newPayload, (statusCode, resPayload)=>{
+                let queryString = {}
+                queryString.id = currentToken;
+                app.client.request(undefined, 'api/tokens', 'GET', queryString, undefined, (statusCode, resPayload)=>{
                     if(statusCode == 200){
                         if(app.setSessionToken(resPayload)){
-                            console.log("token successfullyupdated in ls")
                             callback(false);
                         }
                         else {
@@ -248,18 +256,21 @@ app.tokenRenewalLoop = ()=>{
                         }
                     }
                     else {
+                        console.log("error while getting extended token")
                         app.setSessionToken(false)
                         callback(true);
                     }
                 });
             }           
             else {
+                console.log("error while sending extend update request")
                 app.setSessionToken(false)
                 callback(true);
             } 
           });
       }
       else {
+          console.log("no cuurent token reported")
           app.setSessionToken(false);
           callback(true);
       }
@@ -276,6 +287,5 @@ app.init = ()=>{
 
 //execute the init
 window.onload = ()=>{
-    console.log("onload")
     app.init();
 };

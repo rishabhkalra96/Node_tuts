@@ -403,7 +403,7 @@ handlers.tokens = (data, callback)=>{
 handlers._tokens = {};
 
 handlers._tokens.get = (data, callback)=>{
-    let id = typeof(data.payload.id) == 'string' && data.payload.id.length > 0 ? data.payload.id : false;
+    let id = typeof(data.queryString.id) == 'string' && data.queryString.id.length > 0 ? data.queryString.id : false;
     if(id){
         dataLib.read('tokens', id, (err, tokenData)=>{
             if(!err && tokenData){
@@ -471,7 +471,7 @@ handlers._tokens.post = (data, callback)=>{
 };
 
 handlers._tokens.put = (data, callback)=>{
-    let tokenID = typeof(data.queryString.token) == 'string' && data.queryString.token.length > 0? data.queryString.token : false;
+    let tokenID = typeof(data.payload.id) == 'string' && data.payload.id.length > 0? data.payload.id : false;
     //now look for a file which the same token id
     if(tokenID){
         //if the file doesn't exist , this will throw an error
