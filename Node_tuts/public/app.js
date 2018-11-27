@@ -276,6 +276,39 @@ app.tokenRenewalLoop = ()=>{
       }
   };
 
+  //logic to logout user
+  app.bindLogOut = ()=>{
+      let buttonEl = document.querySelector('[id=logoutButton]');
+      buttonEl.addEventListener("click", (e)=>{
+          //prevent the default redirection and initiate logout procedure
+          e.preventDefault();
+          app.logoutSession();
+      });
+  };
+
+  app.logoutSession = ()=>{
+      let token = typeof(app.config.sessionToken) == 'string' && app.config.sessionToken.length > 0 && app.config.sessionToken !== 'undefined' ? app.config.sessionToken : false;
+
+      if(token){
+        //here we will make a API call to delete a session token and then remove it from the LS
+        let payload = {}
+        payload.id = token;
+        app.client.request(undefined, 'api/tokens', 'DELETE', undefined, payload, (statusCode, resPayload)=>{
+            if(statusCode !== 200){
+                //display error that unable to logout from the server
+            }
+            else {
+                localStorage.clear();
+                app.setLoggedInClass(false);
+                window.location = '/session/deleted';
+            }
+        });
+      }
+      else {
+          //display error stating unable to log out due to some reason
+      }
+  };
+
 //init function to execute
 app.init = ()=>{
     console.log("app.init")
