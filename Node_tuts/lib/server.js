@@ -115,7 +115,6 @@ server.unifiedServer = function(req,res){
 
     //event handler when some data is recieved in the payload / body
     req.on('data', (data) => {
-        console.log("data for bufferpayload is ->", data);
         //this usually writes the complete payload at once but sometimes in case of multiple payloads
         //it takes time to write all of that. The below lines handle both the cases by appending
         bufferPayload += decoder.write(data);
@@ -125,7 +124,6 @@ server.unifiedServer = function(req,res){
     //NOTE : same type of event is read by res.end() also.
     req.on('end', () => {
         bufferPayload += decoder.end();
-        console.log("bufferPayload is ->", bufferPayload)
         //ROUTE TO A SPECIFIC HANDLER BASED ON ROUTING OBJECT, ROUTE TO NOTFOUND IF NOT FOUND
         var selectedHandler = typeof(server.router[trimmedPath]) !== "undefined" ? server.router[trimmedPath] : handlers.notFound;
         //if the handler is for public (/public/), always call the public handler, else let it function usually
@@ -139,9 +137,6 @@ server.unifiedServer = function(req,res){
             'payload': helpers.convertJSONstr2JSON(bufferPayload),
             'queryString': queryObject,
             'trimmedPath': trimmedPath
-        }
-        if(data.pathname.indexOf('api/tokens')> -1 && data.method == 'get' || data.method == 'GET'){
-            console.log("payload details for tokens ->",data.payload)
         }
         //send the data and look for callback
         selectedHandler(data, (statusCode, payload, contentType) => {
