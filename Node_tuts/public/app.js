@@ -317,6 +317,7 @@ app.init = ()=>{
     console.log("app.init")
     //bind all the forms in the page
     app.bindForms();
+    app.bindLogOut();
     app.getSessionToken();
     app.tokenRenewalLoop();
 };
