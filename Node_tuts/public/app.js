@@ -228,6 +228,9 @@ app.tokenRenewalLoop = ()=>{
         if(!err){
           console.log("Token renewed successfully @ "+Date.now());
         }
+        else {
+            app.setLoggedInClass(false);
+        }
       });
     },1000 * 60);
   };
