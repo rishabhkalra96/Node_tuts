@@ -79,7 +79,7 @@ workers.gatherAllChecks = ()=>{
             });
         }
         else {
-            console.log("Error : There are no checks in the checks database");
+            console.log("There are no checks in the checks database");
         }
     });
 };

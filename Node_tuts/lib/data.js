@@ -126,7 +126,6 @@ lib.list = (dir, callback)=>{
             callback(false, trimmedFileNames);
         }
         else {
-            console.log("no files in the mentioned directory ", dir)
             callback(err,directoryList);
         }
     });
