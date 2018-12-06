@@ -47,3 +47,16 @@
     </div>
   </form>
 </div>
+
+<hr />
+<h2>Delete Account Permanently</h2>
+<div class="formWrapper">
+  <form id="accountDelete" action="/api/users" method="DELETE">
+    <div class="formError" name="errorBox"></div>
+    <div class="warning">Dude? This action cannot be undone, are you sure?</div>
+    <input class="hiddenPhoneNumberInput" type="hidden" name="phone" />
+    <div class="inputWrapper ctaWrapper">
+      <button type="submit" class="cta red">I wanna leave</button>
+    </div>
+  </form>
+</div>

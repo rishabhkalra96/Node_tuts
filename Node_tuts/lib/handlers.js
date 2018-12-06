@@ -231,6 +231,39 @@ handlers.accountEdit = (data, callback)=>{
     }
 };
 
+
+//Account has been Deleted
+handlers.accountDeleted = (data, callback)=>{
+    //only supports GET
+    if (data.method == 'get'){
+
+        let templateSpecificData = {
+            'head.title': 'Account Deleted',
+            'head.body': 'Account has been deleted',
+             'body.class': 'accountDeleted'
+        }
+        helpers.getTemplate('accountDeleted', templateSpecificData, (err, templateData)=>{
+            if(!err && templateData){
+                //add the header and footer 
+                helpers.addUniversalTemplates(templateData, templateSpecificData, (err, tempData)=>{
+                    if(!err && tempData.length > 0){
+                        callback(200, tempData, 'html');
+                    }
+                    else {
+                        callback(500, 'Could not generate complete template', 'html')
+                    }
+                })
+            }
+            else {
+                callback(500, undefined, 'html')
+            }
+        });
+    }
+    else {
+        callback(405, undefined, 'html');
+    }
+};
+
 /*
 *   JSON API HANDLERS BELOW
 *
@@ -396,6 +429,7 @@ handlers._users.delete = (data, callback)=>{
     let phone = typeof(data.queryString.phone) == 'string' && data.queryString.phone.length == 10 ? data.queryString.phone : false;
     if(phone){
         let tokenID = typeof(data.headers.token) == 'string' && data.headers.token.length > 0 ? data.headers.token : false;
+        console.log("token for delete is ", tokenID)
         handlers._tokens.verifyToken(tokenID,phone,(isValid)=>{
             if(isValid){
                 dataLib.read('users', phone, (err, userData)=>{

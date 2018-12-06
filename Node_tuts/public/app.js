@@ -91,46 +91,51 @@ app.client.request = (headers, path, method, queryStringObject, payload, callbac
 //Bind the forms
 app.bindForms = ()=>{
     if(document.querySelector("form")){
-        //select the form
-        let form = document.querySelector("form");
-
-        form.addEventListener("submit", (e)=>{
-            //stop immediate submitting the form
-            e.preventDefault();
-            console.log("form data ->", form.method);
-            let formId = form.id;
-            let path = form.action;
-            let method = form.getAttribute("method").toUpperCase();
-            console.log("edit url details ->", formId ," ", path, " ", method);
-            //hide the error message, if one is already shown
-            document.querySelector('[name=errorBox]').style.display = 'hidden';
-
-            //convert the form data into payload
-            let payload = {}
-            let elements = form.elements;
-
-            for(var i = 0 ; i < elements.length ; i++){
-                if(elements[i].type !== 'submit'){
-                    let valueOfelement = elements[i].type == 'checkbox' ? elements[i].checked : elements[i].value;
-                    payload[elements[i].name] = valueOfelement;
-                }
-            }
-            console.log("payload on submit is ->", payload, method)
-            //now call the API to submit the form
-            app.client.request(undefined, path, method, undefined, payload, (statusCode, responsePayload)=>{
-                if(statusCode !== 200){
-                    let errorText = typeof(responsePayload) == 'object' ? responsePayload.Error : 'An error occured while submitting';
-                    //set the error
-                    document.querySelector('[name=errorBox]').innerHTML = errorText + ' ('+statusCode+')';
-                    //display the error
-                    document.querySelector('[name=errorBox]').style.display = 'block';
-                }
-                else {
-                    //everything ok, call the form processor
-                    app.formResponseProcessor(formId, payload, responsePayload);
+        //select the forms
+        let forms = document.querySelectorAll("form");
+        console.log("form captured is ->", forms[0].id, forms[1].id, forms[2].id, forms.length)
+        for(var form = 0; form < forms.length; form++){
+            console.log(forms[form])
+            forms[form].addEventListener("submit", (e)=>{
+                console.log("event")
+                console.log("event listener on ", forms[parseInt(form)].id)
+                //stop immediate submitting the form
+                e.preventDefault();
+                console.log("form data ->", forms[form].method);
+                let formId = forms[form].id;
+                let path = forms[form].action;
+                let method = form[form].getAttribute("method").toUpperCase();
+                console.log("edit url details ->", formId ," ", path, " ", method);
+                //hide the error message, if one is already shown
+                document.querySelector('[name=errorBox]').style.display = 'hidden';
+    
+                //convert the form data into payload
+                let payload = {}
+                let elements = form.elements;
+    
+                for(var i = 0 ; i < elements.length ; i++){
+                    if(elements[i].type !== 'submit'){
+                        let valueOfelement = elements[i].type == 'checkbox' ? elements[i].checked : elements[i].value;
+                        payload[elements[i].name] = valueOfelement;
                     }
-                });
-        });
+                }
+                console.log("payload on submit is ->", payload, method)
+                //now call the API to submit the form
+                app.client.request(undefined, path, method, undefined, payload, (statusCode, responsePayload)=>{
+                    if(statusCode !== 200){
+                        let errorText = typeof(responsePayload) == 'object' ? responsePayload.Error : 'An error occured while submitting';
+                        //set the error
+                        document.querySelector('[name=errorBox]').innerHTML = errorText + ' ('+statusCode+')';
+                        //display the error
+                        document.querySelector('[name=errorBox]').style.display = 'block';
+                    }
+                    else {
+                        //everything ok, call the form processor
+                        app.formResponseProcessor(formId, payload, responsePayload);
+                        }
+                    });
+            });
+        }
     }
 };
 
@@ -172,6 +177,11 @@ app.formResponseProcessor = (formid, reqPayload, resPayload)=>{
     if(formsWithSuccessMessages.indexOf(formid) > -1){
         document.querySelector("#"+formid+" .formSuccess").style.display = 'block';
     }
+
+    if(formid == 'accountDeleted'){
+        app.logUserOut(false);
+        window.localStorage = '/account/deleted'
+};
 };
 
 //get token from the local storage
