@@ -9,7 +9,7 @@ app = {}
 
 //config
 app.config = {
-    'sessionToken': false
+    'sessionToken': false           //this is a type of object
 }
 
 //AJAX frontend client for restfull API requests
@@ -58,7 +58,7 @@ app.client.request = (headers, path, method, queryStringObject, payload, callbac
 
     //if session is active, add that too in the headers
     if (app.config.sessionToken){
-        xhr.setRequestHeader("token", app.config.sessionToken);
+        xhr.setRequestHeader("token", app.config.sessionToken.id);
     }
 
     //handle the response when the request comes back
@@ -71,10 +71,12 @@ app.client.request = (headers, path, method, queryStringObject, payload, callbac
             if(callback){
                 try{
                     let parsedResponse = JSON.parse(responseReturned);
+                    console.log("status code and parsed response captured by client is ->",typeof(parsedResponse)," ", statusCode," and ", parsedResponse);
                     callback(statusCode, parsedResponse)
                 }
                 catch(e){
                     //send only statuscode to the callback
+                    console.log("error from client while reading parsedResponse ->",responseReturned, " error ->", e)
                     callback(statusCode, false);
                 }
             }
@@ -90,44 +92,44 @@ app.client.request = (headers, path, method, queryStringObject, payload, callbac
 app.bindForms = ()=>{
     if(document.querySelector("form")){
         //select the form
-    let form = document.querySelector("form");
+        let form = document.querySelector("form");
 
-    form.addEventListener("submit", (e)=>{
-        //stop immediate submitting the form
-        e.preventDefault();
+        form.addEventListener("submit", (e)=>{
+            //stop immediate submitting the form
+            e.preventDefault();
+            console.log("form data ->", form.method);
+            let formId = form.id;
+            let path = form.action;
+            let method = form.getAttribute("method").toUpperCase();
+            console.log("edit url details ->", formId ," ", path, " ", method);
+            //hide the error message, if one is already shown
+            document.querySelector('[name=errorBox]').style.display = 'hidden';
 
-        let formId = form.id;
-        let path = form.action;
-        let method = form.method.toUpperCase();
+            //convert the form data into payload
+            let payload = {}
+            let elements = form.elements;
 
-        //hide the error message, if one is already shown
-        document.querySelector('[name=errorBox]').style.display = 'hidden';
-
-        //convert the form data into payload
-        let payload = {}
-        let elements = form.elements;
-
-        for(var i = 0 ; i < elements.length ; i++){
-            if(elements[i].type !== 'submit'){
-                let valueOfelement = elements[i].type == 'checkbox' ? elements[i].checked : elements[i].value;
-                payload[elements[i].name] = valueOfelement;
-            }
-        }
-
-        //now call the API to submit the form
-        app.client.request(undefined, path, method, undefined, payload, (statusCode, responsePayload)=>{
-            if(statusCode !== 200){
-                let errorText = typeof(responsePayload) == 'object' ? responsePayload.Error : 'An error occured while submitting';
-                //set the error
-                document.querySelector('[name=errorBox]').innerHTML = errorText + ' ('+statusCode+')';
-                //display the error
-                document.querySelector('[name=errorBox]').style.display = 'block';
-            }
-            else {
-                //everything ok, call the form processor
-                app.formResponseProcessor(formId, payload, responsePayload);
+            for(var i = 0 ; i < elements.length ; i++){
+                if(elements[i].type !== 'submit'){
+                    let valueOfelement = elements[i].type == 'checkbox' ? elements[i].checked : elements[i].value;
+                    payload[elements[i].name] = valueOfelement;
                 }
-            });
+            }
+            console.log("payload on submit is ->", payload, method)
+            //now call the API to submit the form
+            app.client.request(undefined, path, method, undefined, payload, (statusCode, responsePayload)=>{
+                if(statusCode !== 200){
+                    let errorText = typeof(responsePayload) == 'object' ? responsePayload.Error : 'An error occured while submitting';
+                    //set the error
+                    document.querySelector('[name=errorBox]').innerHTML = errorText + ' ('+statusCode+')';
+                    //display the error
+                    document.querySelector('[name=errorBox]').style.display = 'block';
+                }
+                else {
+                    //everything ok, call the form processor
+                    app.formResponseProcessor(formId, payload, responsePayload);
+                    }
+                });
         });
     }
 };
@@ -165,6 +167,11 @@ app.formResponseProcessor = (formid, reqPayload, resPayload)=>{
             window.location = '/checks/all';
         }
     }
+    // If forms saved successfully and they have success messages, show them
+    var formsWithSuccessMessages = ['accountEdit1', 'accountEdit2'];
+    if(formsWithSuccessMessages.indexOf(formid) > -1){
+        document.querySelector("#"+formid+" .formSuccess").style.display = 'block';
+    }
 };
 
 //get token from the local storage
@@ -173,13 +180,13 @@ app.getSessionToken = ()=>{
     if(typeof(tokenString) == 'string'){
         try{
             let token = JSON.parse(tokenString);
-            app.config.sessionToken = token;
             if(typeof(token) !== 'undefined'){
+                app.config.sessionToken = token;
                 console.log("logged in")
                 app.setLoggedInClass(true);
             }
             else {
-                console.log("logged out")
+                app.config.sessionToken = false;
                 app.setLoggedInClass(false);
             }
         }
@@ -189,12 +196,16 @@ app.getSessionToken = ()=>{
             app.setLoggedInClass(false);
         }
     }
+    else {
+        app.config.sessionToken = false;
+        app.setLoggedInClass(false);
+    }
 };
 
 //set token to the local storage and mark as logged in
 app.setSessionToken = (tokenPayload)=>{
-    app.config.sessionToken = tokenPayload.id;
-    let stringToken = JSON.stringify(tokenPayload.id);
+    app.config.sessionToken = tokenPayload;
+    let stringToken = JSON.stringify(tokenPayload);
     if(stringToken !== 'undefined'){
         localStorage.setItem('token', stringToken);
         if(typeof(tokenPayload) == 'object'){
@@ -237,7 +248,7 @@ app.tokenRenewalLoop = ()=>{
 
   //logic to renew token
   app.renewToken = (callback)=>{
-      let currentToken = typeof(app.config.sessionToken) == 'string' ? app.config.sessionToken:false;
+      let currentToken = typeof(app.config.sessionToken.id) == 'string' ? app.config.sessionToken.id:false;
       if(currentToken){
           let payload = {
               "id": currentToken,
@@ -290,7 +301,7 @@ app.tokenRenewalLoop = ()=>{
   };
 
   app.logoutSession = ()=>{
-      let token = typeof(app.config.sessionToken) == 'string' && app.config.sessionToken.length > 0 && app.config.sessionToken !== 'undefined' ? app.config.sessionToken : false;
+      let token = typeof(app.config.sessionToken.id) == 'string' && app.config.sessionToken.id.length > 0 && app.config.sessionToken.id !== 'undefined' ? app.config.sessionToken.id : false;
 
       if(token){
         //here we will make a API call to delete a session token and then remove it from the LS
@@ -309,6 +320,52 @@ app.tokenRenewalLoop = ()=>{
       }
       else {
           //display error stating unable to log out due to some reason
+          console.log("unable to log out")
+      }
+  };
+
+  app.loadDataOnPage = ()=>{
+      let bodyClasses = document.querySelector("body").classList;
+
+      let primaryClass = typeof(bodyClasses[0]) == 'string' ? bodyClasses[0] : false;
+
+      //load data only if edit page is active
+      if(primaryClass == 'accountEdit'){
+          app.loadAccountEditPage();
+      }
+  };
+
+  app.loadAccountEditPage = ()=>{
+      let phone = typeof(app.config.sessionToken.phone) == 'string' && app.config.sessionToken.phone.length == 10 ? app.config.sessionToken.phone : false;
+      if(phone){
+          //successfully fetched phone from LS, now make put request
+          let queryStringObject = {
+              "phone" : phone
+          };
+
+          //make AJAX request to get user details
+          app.client.request(undefined, 'api/users', 'GET', queryStringObject, undefined, (statusCode, newRPayload)=>{
+              if(statusCode == 200){
+                  //OK, now prefill the form
+                  document.querySelector("#accountEdit1 .firstNameInput").value = newRPayload.firstName;
+                  document.querySelector("#accountEdit1 .lastNameInput").value = newRPayload.lastName;
+                  document.querySelector("#accountEdit1 .displayPhoneInput").value = newRPayload.phone;
+                  //store phone in hidden fields for further use
+                  let hiddenPhoneEl = document.querySelectorAll("input.hiddenPhoneNumberInput");
+
+                  for(var i = 0 ; i < hiddenPhoneEl.length ; i++){
+                      hiddenPhoneEl[i].value = newRPayload.phone;
+                  }
+              }
+              else{
+                  //error getting the details of the user, log him out
+                  console.log("error while prefilling the form");
+              }
+          });
+      }
+      else {
+          console.log("unable to get phone from token")
+          app.logoutSession();
       }
   };
 
@@ -320,6 +377,8 @@ app.init = ()=>{
     app.bindLogOut();
     app.getSessionToken();
     app.tokenRenewalLoop();
+    //for edit account settings
+    app.loadDataOnPage();
 };
 
 //execute the init

@@ -199,6 +199,38 @@ handlers.sessionDeleted = (data, callback)=>{
     }
 };
 
+
+//Edit Account Details
+handlers.accountEdit = (data, callback)=>{
+    //only supports GET
+    if (data.method == 'get'){
+
+        let templateSpecificData = {
+            'head.title': 'Edit Account',
+             'body.class': 'accountEdit'
+        }
+        helpers.getTemplate('accountEdit', templateSpecificData, (err, templateData)=>{
+            if(!err && templateData){
+                //add the header and footer 
+                helpers.addUniversalTemplates(templateData, templateSpecificData, (err, tempData)=>{
+                    if(!err && tempData.length > 0){
+                        callback(200, tempData, 'html');
+                    }
+                    else {
+                        callback(500, 'Could not generate complete template', 'html')
+                    }
+                })
+            }
+            else {
+                callback(500, undefined, 'html')
+            }
+        });
+    }
+    else {
+        callback(405, undefined, 'html');
+    }
+};
+
 /*
 *   JSON API HANDLERS BELOW
 *
@@ -312,7 +344,8 @@ handlers._users.put = (data, callback)=>{
     if(phone){
         //fetch the details from the given phone number, if exists
         let tokenID = typeof(data.headers.token) == 'string' && data.headers.token.length > 0 ? data.headers.token : false;
-        headers._tokens.verifyToken(tokenID, phone, (res)=>{
+        console.log("token recieved is ->", tokenID)
+        handlers._tokens.verifyToken(tokenID, phone, (res)=>{
             if(res){
                 dataLib.read('users', phone, (err, data)=>{
                     if(!err && data){
@@ -456,7 +489,7 @@ handlers._tokens.get = (data, callback)=>{
 handlers._tokens.post = (data, callback)=>{
     let phone = typeof(data.payload.phone) == 'string' && data.payload.phone.length == 10 ? data.payload.phone : false;
     let password = typeof(data.payload.password) == 'string' && data.payload.password.length > 0 ? data.payload.password : false;
-    
+    console.log("phone and password are ->", phone, " ", password);
     if (phone && password){
         //lookup into the user directory for specified user
         dataLib.read('users', phone, (err, userData)=>{
