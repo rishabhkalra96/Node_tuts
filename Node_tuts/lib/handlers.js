@@ -426,7 +426,7 @@ handlers._users.put = (data, callback)=>{
 };
 //to handle delete request on users
 handlers._users.delete = (data, callback)=>{
-    let phone = typeof(data.queryString.phone) == 'string' && data.queryString.phone.length == 10 ? data.queryString.phone : false;
+    let phone = typeof(data.payload.phone) == 'string' && data.payload.phone.length == 10 ? data.payload.phone : false;
     if(phone){
         let tokenID = typeof(data.headers.token) == 'string' && data.headers.token.length > 0 ? data.headers.token : false;
         console.log("token for delete is ", tokenID)
@@ -482,7 +482,7 @@ handlers._users.delete = (data, callback)=>{
         });
     }
     else {
-        callback(400, {'Error': 'Could not find the specified user'});
+        callback(400, {'Error': 'Phone number provided seems to be damaged'});
     }
 };
 

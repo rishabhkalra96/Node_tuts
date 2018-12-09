@@ -90,28 +90,28 @@ app.client.request = (headers, path, method, queryStringObject, payload, callbac
 
 //Bind the forms
 app.bindForms = ()=>{
-    if(document.querySelector("form")){
+    if(document.querySelectorAll("form")){
         //select the forms
-        let forms = document.querySelectorAll("form");
-        console.log("form captured is ->", forms[0].id, forms[1].id, forms[2].id, forms.length)
+        let forms = document.forms;
+        console.log("total forms captured length is ->", forms.length)
         for(var form = 0; form < forms.length; form++){
-            console.log(forms[form])
-            forms[form].addEventListener("submit", (e)=>{
-                console.log("event")
-                console.log("event listener on ", forms[parseInt(form)].id)
+            //set one form and preset the details to access the form on submit event
+            let oForm = forms[form];
+
+            oForm.addEventListener("submit", (e)=>{
+                console.log("event", oForm.id);
                 //stop immediate submitting the form
                 e.preventDefault();
-                console.log("form data ->", forms[form].method);
-                let formId = forms[form].id;
-                let path = forms[form].action;
-                let method = form[form].getAttribute("method").toUpperCase();
+                let formId = oForm.getAttribute("id");
+                let path = oForm.action;
+                let method = oForm.getAttribute("method").toUpperCase();
                 console.log("edit url details ->", formId ," ", path, " ", method);
                 //hide the error message, if one is already shown
                 document.querySelector('[name=errorBox]').style.display = 'hidden';
     
                 //convert the form data into payload
                 let payload = {}
-                let elements = form.elements;
+                let elements = oForm.elements;
     
                 for(var i = 0 ; i < elements.length ; i++){
                     if(elements[i].type !== 'submit'){
@@ -172,16 +172,18 @@ app.formResponseProcessor = (formid, reqPayload, resPayload)=>{
             window.location = '/checks/all';
         }
     }
+    if(formid == 'accountDelete'){
+        //clear the token
+        localStorage.clear();
+        app.setLoggedInClass(false);
+        console.log("logged out")
+        window.location = '/account/deleted'
+}
     // If forms saved successfully and they have success messages, show them
     var formsWithSuccessMessages = ['accountEdit1', 'accountEdit2'];
     if(formsWithSuccessMessages.indexOf(formid) > -1){
         document.querySelector("#"+formid+" .formSuccess").style.display = 'block';
     }
-
-    if(formid == 'accountDeleted'){
-        app.logUserOut(false);
-        window.localStorage = '/account/deleted'
-};
 };
 
 //get token from the local storage
