@@ -391,7 +391,7 @@ handlers._users.put = (data, callback)=>{
                                 data.lastName = lastName;
                             }
                             if(password){
-                                data.password = helpers.hash(password);
+                                data.hashedPassword = helpers.hash(password);
                             }
                             //now update the data
                             dataLib.update('users', phone, data, (err)=>{

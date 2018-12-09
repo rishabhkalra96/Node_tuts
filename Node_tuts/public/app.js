@@ -119,21 +119,60 @@ app.bindForms = ()=>{
                         payload[elements[i].name] = valueOfelement;
                     }
                 }
-                console.log("payload on submit is ->", payload, method)
-                //now call the API to submit the form
-                app.client.request(undefined, path, method, undefined, payload, (statusCode, responsePayload)=>{
-                    if(statusCode !== 200){
-                        let errorText = typeof(responsePayload) == 'object' ? responsePayload.Error : 'An error occured while submitting';
-                        //set the error
-                        document.querySelector('[name=errorBox]').innerHTML = errorText + ' ('+statusCode+')';
-                        //display the error
-                        document.querySelector('[name=errorBox]').style.display = 'block';
+                console.log("payload for submit is ->", payload, method)
+
+                //check whether the form is of type change password, if yes, compare passwords first, else make api request
+                if(formId == 'accountEdit2'){
+                    let errorText = '';
+                    //compare password and cpassword
+                    if((typeof(payload['password']) !== "undefined" && payload['password'].length > 0) && (typeof(payload['confirmPassword']) !== "undefined" && payload['confirmPassword'].length > 0)){
+                        console.log("change password form is detected")
+                        if(payload['password'] === payload['confirmPassword']){
+                            //passwords match, now update the payload for correct ajaxRequest
+                            delete payload['confirmPassword'];
+                            //now make the ajaxRequest for change password
+                            console.log("final payload for change password", payload)
+                            app.client.request(undefined, path, method, undefined, payload, (statusCode, responsePayload)=>{
+                                if(statusCode !== 200){
+                                    errorText = typeof(responsePayload) == 'object' ? responsePayload.Error : 'An error occured while submitting';
+                                }
+                                else {
+                                    //everything ok, call the form processor
+                                    app.formResponseProcessor(formId, payload, responsePayload);
+                                }
+                            });
+                        }
+                        else {
+                            errorText = "Passwords do not match, try again";
+                        }
                     }
                     else {
-                        //everything ok, call the form processor
-                        app.formResponseProcessor(formId, payload, responsePayload);
+                        errorText = "Make sure password fields are properly filled";
+                    }
+                    //set error, if any
+                    if(errorText.length > 0){
+                        //set the error
+                        document.querySelector('[name=errorBoxPassword]').innerHTML = errorText;
+                        //display the error
+                        document.querySelector('[name=errorBoxPassword]').style.display = 'block';
+                    }
+                }
+                else{
+                    //now call the API to submit the form
+                    app.client.request(undefined, path, method, undefined, payload, (statusCode, responsePayload)=>{
+                        if(statusCode !== 200){
+                            let errorText = typeof(responsePayload) == 'object' ? responsePayload.Error : 'An error occured while submitting';
+                            //set the error
+                            document.querySelector('[name=errorBox]').innerHTML = errorText + ' ('+statusCode+')';
+                            //display the error
+                            document.querySelector('[name=errorBox]').style.display = 'block';
+                        }
+                        else {
+                            //everything ok, call the form processor
+                            app.formResponseProcessor(formId, payload, responsePayload);
                         }
                     });
+                }
             });
         }
     }
@@ -178,11 +217,13 @@ app.formResponseProcessor = (formid, reqPayload, resPayload)=>{
         app.setLoggedInClass(false);
         console.log("logged out")
         window.location = '/account/deleted'
-}
+    }
     // If forms saved successfully and they have success messages, show them
     var formsWithSuccessMessages = ['accountEdit1', 'accountEdit2'];
     if(formsWithSuccessMessages.indexOf(formid) > -1){
         document.querySelector("#"+formid+" .formSuccess").style.display = 'block';
+        if(formid == 'accountEdit1'){document.querySelector('[name=errorBox]').style.display = 'hidden';}
+        if(formid == 'accountEdit2'){document.querySelector('[name=errorBoxPassword]').style.display = 'hidden';}
     }
 };
 
