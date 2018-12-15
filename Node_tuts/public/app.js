@@ -373,7 +373,7 @@ app.tokenRenewalLoop = ()=>{
       }
       else {
           //display error stating unable to log out due to some reason
-          console.log("unable to log out")
+          console.log("unable to log out from server, probably because token in client is malfunctioned ->", token);
       }
   };
 
