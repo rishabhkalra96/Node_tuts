@@ -115,8 +115,32 @@ app.bindForms = ()=>{
     
                 for(var i = 0 ; i < elements.length ; i++){
                     if(elements[i].type !== 'submit'){
-                        let valueOfelement = elements[i].type == 'checkbox' ? elements[i].checked : elements[i].value;
-                        payload[elements[i].name] = valueOfelement;
+
+                        //determine the class of element and set value accordingly
+                        let classOfElm = typeof(elements[i].classList.value) == 'string' && elements[i].classList.value.length > 0 ? elements[i].classList.value : '';
+                        let valueOfelement = elements[i].type == 'checkbox' && classOfElm.indexOf('multiselect') == -1 ? elements[i].checked : classOfElm.indexOf('intval') == -1 ? elements[i].value: parseInt(elements[i].value);
+                        let elementIsChecked = elements[i].checked;
+                        let nameOfElm = elements[i].name;
+                        //replace the name of the element if it is _method
+                        if(nameOfElm == '_method'){
+                            method = valueOfelement;
+                        }
+                        else {
+                            //create payload key 'method' and record the field httpmethod
+                            if(nameOfElm == 'httpmethod'){
+                                nameOfElm = 'method';
+                            }
+                            //if the element has multiselect, add the values as an array
+                            if(classOfElm.indexOf('multiselect') > -1){
+                                if(elementIsChecked){
+                                    payload[nameOfElm] = typeof(payload[nameOfElm]) == 'object' && payload[nameOfElm] instanceof Array ? payload[nameOfElm] : [];
+                                    payload[nameOfElm].push(valueOfelement);
+                                }
+                            }
+                            else {
+                                payload[nameOfElm] = valueOfelement;
+                            }
+                        }
                     }
                 }
                 console.log("payload for submit is ->", payload, method)
@@ -217,6 +241,10 @@ app.formResponseProcessor = (formid, reqPayload, resPayload)=>{
         app.setLoggedInClass(false);
         console.log("logged out")
         window.location = '/account/deleted'
+    }
+    if(formid == 'checksCreate'){
+        console.log("taking to checks all")
+        window.location = '/checks/all'
     }
     // If forms saved successfully and they have success messages, show them
     var formsWithSuccessMessages = ['accountEdit1', 'accountEdit2'];
