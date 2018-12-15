@@ -264,6 +264,37 @@ handlers.accountDeleted = (data, callback)=>{
     }
 };
 
+//create a new check template
+handlers.checksCreate = (data, callback)=>{
+    //only supports GET
+    if (data.method == 'get'){
+
+        let templateSpecificData = {
+            'head.title': 'Create a new check',
+             'body.class': 'checksCreate'
+        }
+        helpers.getTemplate('checksCreate', templateSpecificData, (err, templateData)=>{
+            if(!err && templateData){
+                //add the header and footer 
+                helpers.addUniversalTemplates(templateData, templateSpecificData, (err, tempData)=>{
+                    if(!err && tempData.length > 0){
+                        callback(200, tempData, 'html');
+                    }
+                    else {
+                        callback(500, 'Could not generate complete template', 'html')
+                    }
+                })
+            }
+            else {
+                callback(500, undefined, 'html')
+            }
+        });
+    }
+    else {
+        callback(405, undefined, 'html');
+    }
+};
+
 /*
 *   JSON API HANDLERS BELOW
 *
