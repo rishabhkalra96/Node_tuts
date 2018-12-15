@@ -295,6 +295,68 @@ handlers.checksCreate = (data, callback)=>{
     }
 };
 
+
+//checks edit 
+handlers.checksEdit = (data, callback)=>{
+    //only supports GET
+    if (data.method == 'get'){
+
+        let templateSpecificData = {
+            'head.title': 'Edit Checks',
+             'body.class': 'checksEdit'
+        }
+        helpers.getTemplate('checksEdit', templateSpecificData, (err, templateData)=>{
+            if(!err && templateData){
+                //add the header and footer 
+                helpers.addUniversalTemplates(templateData, templateSpecificData, (err, tempData)=>{
+                    if(!err && tempData.length > 0){
+                        callback(200, tempData, 'html');
+                    }
+                    else {
+                        callback(500, 'Could not generate complete template', 'html')
+                    }
+                })
+            }
+            else {
+                callback(500, undefined, 'html')
+            }
+        });
+    }
+    else {
+        callback(405, undefined, 'html');
+    }
+};
+
+//Dashboard view template
+handlers.checkList = (data, callback)=>{
+    //only supports GET
+    if (data.method == 'get'){
+
+        let templateSpecificData = {
+            'head.title': 'Dashboard',
+             'body.class': 'checkList'
+        }
+        helpers.getTemplate('Dashboard', templateSpecificData, (err, templateData)=>{
+            if(!err && templateData){
+                //add the header and footer 
+                helpers.addUniversalTemplates(templateData, templateSpecificData, (err, tempData)=>{
+                    if(!err && tempData.length > 0){
+                        callback(200, tempData, 'html');
+                    }
+                    else {
+                        callback(500, 'Could not generate complete template', 'html')
+                    }
+                })
+            }
+            else {
+                callback(500, undefined, 'html')
+            }
+        });
+    }
+    else {
+        callback(405, undefined, 'html');
+    }
+};
 /*
 *   JSON API HANDLERS BELOW
 *
@@ -704,6 +766,7 @@ handlers.checks = (data, callback)=>{
 
 //CONTAINERS FOR CHECKS
 handlers._checks = [];
+
 handlers._checks.get = (data, callback) => {
     let id = typeof(data.queryString.id) == 'string' && data.queryString.id.length == 20 ? data.queryString.id : false;
 

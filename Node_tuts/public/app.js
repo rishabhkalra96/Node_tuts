@@ -414,6 +414,10 @@ app.tokenRenewalLoop = ()=>{
       if(primaryClass == 'accountEdit'){
           app.loadAccountEditPage();
       }
+      //load data only if dashboard page is active
+      if(primaryClass == 'checkList'){
+        app.loadDashboardPage();
+      }
   };
 
   app.loadAccountEditPage = ()=>{
@@ -448,6 +452,79 @@ app.tokenRenewalLoop = ()=>{
           console.log("unable to get phone from token")
           app.logoutSession();
       }
+  };
+
+
+  app.loadDashboardPage = () => {
+    //load data for dashboard page
+    let phone = typeof(app.config.sessionToken.phone) == 'string' && app.config.sessionToken.phone.length == 10 ? app.config.sessionToken.phone : false;
+    if(phone){
+
+      let queryStringObject = {
+        "phone": phone
+      };
+
+      app.client.request(undefined, 'api/users', 'GET', queryStringObject, undefined, (sc, resPayload)=>{
+        if(sc == 200){
+          //determine total checks
+          let allChecks = typeof(resPayload.checks) == 'object' && resPayload.checks instanceof Array && resPayload.checks.length > 0 ? resPayload.checks : [];
+
+          if(allChecks.length > 0){
+            allChecks.forEach((checkID)=>{
+              let queryStringObject = {
+                "id": checkID
+              };
+
+              //get check from the server
+              app.client.request(undefined, 'api/checks', 'GET', queryStringObject, undefined, (stC, resP)=>{
+                if(stC == 200){
+                  let checkData = resP;
+                  //convert the checks data into html table and render it
+                  let table = document.getElementById("checksListTable");
+                  console.log("table acquired as ->", table);
+
+                  let tr = table.insertRow(-1);
+                  tr.classList.add("checkRow");
+
+                  let td0 = tr.insertCell(0);
+                  let td1 = tr.insertCell(1);
+                  let td2 = tr.insertCell(2);
+                  let td3 = tr.insertCell(3);
+                  let td4 = tr.insertCell(4);
+
+                  td0.innerHTML = checkData.method.toUpperCase();
+                  td1.innerHTML = checkData.protocol+'://';
+                  td2.innerHTML = checkData.url;
+
+                  let state = typeof(checkData.state) == 'string' ? checkData.state : 'not known';
+                  td3.innerHTML = state;
+                  td4.innerHTML = '<a href="/checks/edit?id='+checkData.id+'">View  |  Edit  |  &#x26D4; </a>';
+                }
+                else {
+                  console.log("error occured while loading check data------> ", resP);
+                }
+              });
+            });
+          }
+          if (allChecks.length < 5){
+            document.getElementById("createCheckCTA").style.display = 'block';
+          }
+          else {
+            document.getElementById("noChecksMessage").style.display = 'table-row';
+            document.getElementById("createCheckCTA").style.display = 'block';
+          }
+        }
+        else {
+          console.log("status went rogue ", sc);
+          app.logoutSession();
+        }
+      });
+
+
+    }
+    else {
+      console.log("unable to fetch phone from local storage");
+    }
   };
 
 //init function to execute
