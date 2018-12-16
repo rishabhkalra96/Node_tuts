@@ -52,7 +52,7 @@ environments.production = {
         'appName': 'UptimeChecker',
         'companyName': 'Dummy-Company',
         'yearCreated': '2018',
-        'baseUrl': 'https://monitorwebsites.herokuapp.com/'
+        'baseUrl': 'https://monitorfree.herokuapp.com/'
     }
 };
 
