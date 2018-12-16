@@ -29,7 +29,7 @@ environments.staging = {
         'appName': 'UptimeChecker',
         'companyName': 'Dummy-Company',
         'yearCreated': '2018',
-        'baseUrl': 'http://0.0.0.0:3000/'
+        'baseUrl': 'http://0.0.0.0:'+process.env.PORT+'/'
     }
 };
 
