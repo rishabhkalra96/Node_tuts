@@ -52,7 +52,7 @@ environments.production = {
         'appName': 'UptimeChecker',
         'companyName': 'Dummy-Company',
         'yearCreated': '2018',
-        'baseUrl': 'http://0.0.0.0:'+process.env.PORT+'/'
+        'baseUrl': 'https://peaceful-basin-33443.herokuapp.com/'
     }
 };
 
