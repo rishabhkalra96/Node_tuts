@@ -220,9 +220,9 @@ server.init = ()=>{
         console.log('\x1b[36m%s\x1b[0m',"the server is listening on port "+config.httpPort + " ["+config.envName+"] ");
     });
 
-    server.httpsServer.listen(config.httpsPort, function(){
+    /* server.httpsServer.listen(config.httpsPort, function(){
         console.log('\x1b[35m%s\x1b[0m',"the server is listening on port "+config.httpsPort + " ["+config.envName+"] ");
-    });
+    }); */
 };
 
 module.exports = server;

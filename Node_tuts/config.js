@@ -12,8 +12,8 @@ var environments = {};
 
 //configuration for staging
 environments.staging = {
-    'httpPort': 3000,
-    'httpsPort': 3001,
+    'httpPort': process.env.PORT || 3000,
+    'httpsPort':process.env.PORT || 3001,
     'envName': "staging",
     'hashingSecret': "ObviouslyASecret",
     'maxChecks': 5,
@@ -29,14 +29,14 @@ environments.staging = {
         'appName': 'UptimeChecker',
         'companyName': 'Dummy-Company',
         'yearCreated': '2018',
-        'baseUrl': 'http://localhost:3000/'
+        'baseUrl': 'https://monitorwebsites.herokuapp.com/'
     }
 };
 
 //configuration for production
 environments.production = {
-    'httpPort': 5000,
-    'httpsPort': 5001,
+    'httpPort': process.env.PORT || 5000,
+    'httpsPort': process.env.PORT || 5001,
     'envName': "production",
     'hashingSecret': "ObviouslyASecretAgain",
     'maxChecks': 5,
@@ -52,7 +52,7 @@ environments.production = {
         'appName': 'UptimeChecker',
         'companyName': 'Dummy-Company',
         'yearCreated': '2018',
-        'baseUrl': 'http://localhost:5000/'
+        'baseUrl': 'https://monitorwebsites.herokuapp.com/'
     }
 };
 
