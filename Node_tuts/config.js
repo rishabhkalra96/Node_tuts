@@ -52,7 +52,7 @@ environments.production = {
         'appName': 'UptimeChecker',
         'companyName': 'Dummy-Company',
         'yearCreated': '2018',
-        'baseUrl': 'http://localhost:5000/'
+        'baseUrl': 'http://0.0.0.0:'+process.env.PORT+'/'
     }
 };
 
